@@ -6,6 +6,7 @@
    <!-- <a mat-button [routerLink]="[pid, 'editing']" routerLinkActive="active">{{ 'navbar.editing' | translate }}</a> -->
    <a mat-button [routerLink]="['/home']"   routerLinkActive="active">{{ 'navbar.my_objects' | translate }}</a>
    <a mat-button [routerLink]="['/revision']"   routerLinkActive="active">{{ 'navbar.revision' | translate }}</a>
+   <a mat-button [routerLink]="['/document-entry']"   routerLinkActive="active">{{ 'navbar.documentEntry' | translate }}</a>
    <a mat-button [routerLink]="['/process-management']"   routerLinkActive="active">{{ 'navbar.processManagement' | translate }}</a>
    <ng-container *ngIf="auth.isLoggedIn()">
       <a [matMenuTriggerFor]="profile_menu" mat-button class="app-avatar">

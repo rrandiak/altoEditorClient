@@ -1,10 +1,11 @@
 import { isPlatformBrowser } from '@angular/common';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
+import { map, Observable, of, switchMap } from 'rxjs';
 import { TranslateService } from '@ngx-translate/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { AppConfiguration } from './app-configuration';
+import { KrameriusDocument } from './shared/kramerius-document';
 
 @Injectable({
   providedIn: 'root'
@@ -151,5 +152,76 @@ export class AppService {
     return this.post(url, data);
   }
 
+  findKrameriusObject(pid: string, instance: string): Observable<KrameriusDocument | null> {
+    const baseUrl = 'https://api.kramerius.mzk.cz/search/api/client/v7.0/search';
+
+    const baseParams = new HttpParams()
+      .set('q', `pid:"${pid}"`)
+      .set(
+        'fl',
+        'authors,title.search,root.title,model,count_page,count_volume,count_issue,count_monograph_unit'
+      )
+      .set('rows', '1')
+      .set('wt', 'json');
+
+    return this.http.get<any>(baseUrl, { params: baseParams }).pipe(
+      map(res => res?.response?.docs?.[0] ?? null),
+
+      switchMap(doc => {
+        if (!doc) {
+          return of(null);
+        }
+
+        const mapped: KrameriusDocument = {
+          pid,
+          link: `https://digitalniknihovna.cz/mzk/uuid/${pid}`,
+          root_title: doc['root.title'],
+          title: doc['title.search'],
+          authors: doc['authors'] || [],
+          model: doc['model'],
+          page_count: doc['count_page'],
+          volume_count: doc['count_volume'],
+          issue_count: doc['count_issue'],
+          monograph_unit_count: doc['count_monograph_unit'],
+          all_pages_count: 0
+        };
+
+        // Page = exactly 1 page
+        if (mapped.model === 'page') {
+          mapped.all_pages_count = 1;
+          return of(mapped);
+        }
+
+        // If Kramerius already gave page count
+        if (mapped.page_count) {
+          mapped.all_pages_count = mapped.page_count;
+          return of(mapped);
+        }
+
+        // Otherwise count pages via secondary query
+        const pageCountParams = new HttpParams()
+          .set('q', `own_pid_path:/.*${pid}.*/ AND model:page`)
+          .set('rows', '0')
+          .set('wt', 'json');
+
+        return this.http.get<any>(baseUrl, { params: pageCountParams }).pipe(
+          map(r => {
+            mapped.all_pages_count = r?.response?.numFound ?? 0;
+            return mapped;
+          })
+        );
+      })
+    );
+    // const params: HttpParams = new HttpParams()
+    // .set('pid', pid)
+    // .set('instance', instance);
+    // return this.get(`/object/findKrameriusObjects`, params); 
+  }
+
+  addAllPages(pid: string, instance: string): Observable<any> {
+    const url = `/object/addAllPages`;
+    const data = { pid, instance };
+    return this.post(url, data);
+  }
 
 }

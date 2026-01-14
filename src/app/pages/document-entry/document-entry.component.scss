@@ -1,0 +1,67 @@
+.pid-input {
+  gap: 16px;
+
+  .pid-confirm-btn {
+    height: 56px;
+    white-space: nowrap;
+  }
+}
+
+.document-card {
+  background: #fff;
+  border-radius: 6px;
+
+  .doc-header {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    padding-bottom: 8px;
+
+    .doc-title {
+      margin: 0;
+      font-weight: 600;
+    }
+
+    .doc-meta {
+      display: flex;
+      justify-content: last baseline;
+      gap: 8px;
+      color: rgba(0, 0, 0, 0.6);
+
+      .doc-pid {
+        font-family: monospace;
+        // font-size: 0.9em;
+        line-height: 1.4;
+      }
+
+      a {
+        display: flex;
+        align-items: center;
+      }
+
+      mat-icon {
+        font-size: 18px;
+      }
+    }
+  }
+
+  .doc-details {
+    .doc-row {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 6px;
+
+      .label {
+        font-weight: 500;
+        color: rgba(0, 0, 0, 0.7);
+        min-width: 160px;
+      }
+
+      .value {
+        flex: 1;
+      }
+    }
+  }
+
+  .doc-actions {
+    margin-top: 16px;
+  }
+}

@@ -2,6 +2,7 @@
   "navbar": {
     "editing": "Editace",
     "revision": "Revize",
+    "documentEntry": "Přidání dokumentů",
     "processManagement": "Správa procesů",
     "my_objects": "Moje editace",
     "login": "Přihlásit",
@@ -20,6 +21,10 @@
     "saveChangesToProarc": "Uložit změny do ProArcu",
     "PERO": "Vygenerovat novou textovou vrstvu pomoci PERO",
     "generate": "Vygenerovat",
+    "load": "Načíst",
+    "addAllPagesWithCount_one": "Přidat jednu stránku",
+    "addAllPagesWithCount_few": "Přidat {{count}} stránky",
+    "addAllPagesWithCount_many": "Přidat všech {{count}} stránek",
     "logIn": "Přihlásit se"
   },
   "desc": {
@@ -48,7 +53,26 @@
     "markSuccess": "Označit úspěšně proběhlo",
     "noPERO_dialog": "Vygenerovat novou textovou vrstvu pomoci PERO",
     "version": "Verze",
-    "connectedInstance": "Připojená instance"
+    "connectedInstance": "Připojená instance",
+    "enterPid": "Zadejte PID dokumentu",
+    "authors": "Autoři",
+    "model": "Model",
+    "title": "Název",
+    "pageCount": "Počet stran",
+    "monographUnitCount": "Počet monografických jednotek",
+    "volumeCount": "Počet svazků",
+    "issueCount": "Počet čísel",
+    "allPagesCount": "Celkový počet stran"
+  },
+  "msg": {
+    "documentEntry": {
+      "notFound": "Dokument s daným PID nebyl nalezen.",
+      "addSuccess": "Stránky dokumentu byly úspěšně přidány.",
+      "addError": "Při přidávání stránek dokumentu došlo k chybě."
+    }
+  },
+  "hint": {
+    "pressEnterToLoad": "Stiskněte Enter pro načtení"
   },
   "state": {
     "PLANNED": "Plánované",

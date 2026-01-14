@@ -1,0 +1,111 @@
+<div class="app-fxLayout-column app-fxFlexFill">
+  <!-- Breadcrumbs -->
+  <div class="app-breadcrumbsbar app-fxLayout-row app-fxLayout-center-v">
+    <div
+      class="app-breadcrumbs app-fxFlex app-fxLayout-row app-fxLayout-center-v"
+    >
+      <a routerLink="/"><mat-icon>home</mat-icon></a>
+      <span class="app-separator">/</span>
+      <span>{{ "navbar.documentEntry" | translate }}</span>
+    </div>
+  </div>
+
+  <div
+    class="app-content-wrapper app-fxFlex app-fxLayout-column app-pl-2 app-pr-2"
+  >
+    <!-- STEP 1: PID input -->
+    <div class="pid-input app-fxLayout-row app-center-v app-mb-3">
+      <mat-form-field appearance="fill" class="app-fxFlex">
+        <mat-label>{{ "desc.enterPid" | translate }}</mat-label>
+        <input
+          matInput
+          [(ngModel)]="pid"
+          (keyup.enter)="loadDocument()"
+          placeholder="uuid:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+        />
+        <mat-hint>{{ "hint.pressEnterToLoad" | translate }}</mat-hint>
+      </mat-form-field>
+
+      <button
+        mat-raised-button
+        color="primary"
+        class="pid-confirm-btn"
+        (click)="loadDocument()"
+        [disabled]="!pid"
+      >
+        <mat-icon>search</mat-icon>
+        {{ "button.load" | translate }}
+      </button>
+    </div>
+
+    <!-- STEP 2: Document info -->
+    <div *ngIf="document" class="document-card app-border-wrapper app-p-3">
+      <!-- Header -->
+      <div class="doc-header app-mb-2">
+        <h2 class="doc-title">{{ document.root_title }}</h2>
+        <div class="doc-meta">
+          <span class="doc-pid">{{ document.pid }}</span>
+          <a [href]="document.link" target="_blank" rel="noopener noreferrer">
+            <mat-icon>open_in_new</mat-icon>
+          </a>
+        </div>
+      </div>
+
+      <!-- Details -->
+      <div class="doc-details app-mb-2">
+        <div class="doc-row" *ngIf="document.authors?.length">
+          <span class="label">{{ "desc.authors" | translate }}</span>
+          <span class="value">{{ document.authors.join(", ") }}</span>
+        </div>
+
+        <div class="doc-row">
+          <span class="label">{{ "desc.model" | translate }}</span>
+          <span class="value">{{ document.model }}</span>
+        </div>
+
+        <div class="doc-row" *ngIf="document.root_title !== document.title">
+          <span class="label">{{ "desc.title" | translate }}</span>
+          <span class="value">{{ document.title }}</span>
+        </div>
+
+        <div *ngIf="document.page_count" class="doc-row">
+          <span class="label">{{ "desc.pageCount" | translate }}</span>
+          <span class="value">{{ document.page_count }}</span>
+        </div>
+
+        <div *ngIf="document.monograph_unit_count" class="doc-row">
+          <span class="label">{{
+            "desc.monographUnitCount" | translate
+          }}</span>
+          <span class="value">{{ document.monograph_unit_count }}</span>
+        </div>
+
+        <div *ngIf="document.volume_count" class="doc-row">
+          <span class="label">{{ "desc.volumeCount" | translate }}</span>
+          <span class="value">{{ document.volume_count }}</span>
+        </div>
+
+        <div *ngIf="document.issue_count" class="doc-row">
+          <span class="label">{{ "desc.issueCount" | translate }}</span>
+          <span class="value">{{ document.issue_count }}</span>
+        </div>
+
+        <div class="doc-row">
+          <span class="label">{{ "desc.allPagesCount" | translate }}</span>
+          <span class="value">{{ document.all_pages_count }}</span>
+        </div>
+
+        <!-- Actions -->
+        <div class="doc-actions app-fxLayout-row app-end">
+          <button mat-raised-button color="accent" (click)="addAllPages()">
+            <mat-icon>add</mat-icon>
+            {{
+              pluralKey("button.addAllPagesWithCount", document.all_pages_count)
+                | translate : { count: document.all_pages_count }
+            }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

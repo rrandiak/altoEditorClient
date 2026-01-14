@@ -2,6 +2,7 @@
   "navbar": {
     "editing": "Editing",
     "revision": "Revision",
+    "documentEntry": "Add documents",
     "processManagement": "Process management",
     "my_objects": "My editings",
     "login": "Login",
@@ -20,6 +21,10 @@
     "saveChangesToProarc": "Save changes to ProArc",
     "PERO": "Create new text layer using PERO",
     "generate": "Create",
+    "load": "Load",
+    "addAllPagesWithCount_one": "Add one page",
+    "addAllPagesWithCount_few": "Add {{count}} pages",
+    "addAllPagesWithCount_many": "Add all {{count}} pages",
     "logIn": "Login"
   },
   "desc": {
@@ -48,7 +53,26 @@
     "markSuccess": "Mark success",
     "noPERO_dialog": "Create new text layer using PERO",
     "version": "Version",
-    "connectedInstance": "Connected instance"
+    "connectedInstance": "Connected instance",
+    "enterPid": "Enter document PID",
+    "authors": "Authors",
+    "model": "Model",
+    "title": "Title",
+    "pageCount": "Page count",
+    "monographUnitCount": "Monograph unit count",
+    "volumeCount": "Volume count",
+    "issueCount": "Issue count",
+    "allPagesCount": "All pages count"
+  },
+  "msg": {
+    "documentEntry": {
+      "notFound": "Document with the given PID was not found.",
+      "addSuccess": "Document pages were successfully added.",
+      "addError": "An error occurred while adding document pages."
+    }
+  },
+  "hint": {
+    "pressEnterToLoad": "Press Enter to load"
   },
   "state": {
     "PLANNED": "Planned",

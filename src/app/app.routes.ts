@@ -3,6 +3,7 @@ import { EditingComponent } from './pages/editing/editing.component';
 import { RevisionComponent } from './pages/revision/revision.component';
 import { RevisionDetailComponent } from './pages/revision/revision-detail/revision-detail.component';
 import { HomeComponent } from './pages/home/home.component';
+import { DocumentEntryComponent } from './pages/document-entry/document-entry.component';
 import { ProcessManagementComponent } from './pages/process-management/process-management.component';
 import { LoginComponent } from './pages/login/login.component';
 import { AuthComponent } from './pages/auth/auth.component';
@@ -14,6 +15,7 @@ export const routes: Routes = [
   { path: 'keycloak', component: AuthComponent },
   { path: 'home', component: HomeComponent, canActivate: [AuthGuard]  },
   { path: 'revision', component: RevisionComponent, canActivate: [AuthGuard] },
+  { path: 'document-entry', component: DocumentEntryComponent, canActivate: [AuthGuard] },
   { path: 'process-management', component: ProcessManagementComponent, canActivate: [AuthGuard] },
   { path: ':pid', redirectTo: ':pid/editing', pathMatch: 'full' },
   { path: ':pid/editing', component: EditingComponent, canActivate: [AuthGuard] },
