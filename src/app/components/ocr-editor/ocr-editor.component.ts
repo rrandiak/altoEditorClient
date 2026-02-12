@@ -6,16 +6,22 @@ import { TranslateModule } from '@ngx-translate/core';
 import { XmlJsElement } from 'src/app/shared/xml-js-element';
 import { FormsModule } from '@angular/forms';
 import { AppState } from 'src/app/shared/app.state';
-import { Utils } from 'src/app/shared/utils';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { getElementByPos } from 'src/app/shared/utils';
 
 @Component({
   selector: 'app-ocr-editor',
   standalone: true,
-  imports: [CommonModule, FormsModule, MatTooltipModule,
-    MatIconModule, MatButtonModule, TranslateModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    MatTooltipModule,
+    MatIconModule,
+    MatButtonModule,
+    TranslateModule,
+  ],
   templateUrl: './ocr-editor.component.html',
-  styleUrls: ['./ocr-editor.component.scss']
+  styleUrls: ['./ocr-editor.component.scss'],
 })
 export class OcrEditorComponent {
   @Input() canEdit: boolean;
@@ -28,7 +34,7 @@ export class OcrEditorComponent {
     this._printSpace = value;
     this.checkDiffs();
   }
-  
+
   _printSpaceDiff: XmlJsElement;
   @Input() set printSpaceDiff(value: XmlJsElement) {
     this._printSpaceDiff = value;
@@ -37,7 +43,7 @@ export class OcrEditorComponent {
 
   diffs: { [key: string]: string } = {}; // key is 'HPOS-VPOS', value is CONTENT
 
-  constructor(public state: AppState) { }
+  constructor(public state: AppState) {}
 
   onSetArea(blockIdx: number, lineIdx: number, wordIdx: number) {
     if (this.canEdit) {
@@ -52,9 +58,14 @@ export class OcrEditorComponent {
         tb.elements.forEach((line: XmlJsElement, idx: number) => {
           line.idx = idx;
           line.elements.forEach((word: XmlJsElement, widx: number) => {
-            const d = Utils.getElementByPos(this._printSpaceDiff, word.attributes['HPOS'], word.attributes['VPOS']);
+            const d = getElementByPos(
+              this._printSpaceDiff,
+              word.attributes['HPOS'],
+              word.attributes['VPOS'],
+            );
             if (d && d.attributes['CONTENT'] !== word.attributes['CONTENT']) {
-              const key = word.attributes['HPOS'] + '-' +  word.attributes['VPOS']
+              const key =
+                word.attributes['HPOS'] + '-' + word.attributes['VPOS'];
               this.diffs[key] = d.attributes['CONTENT'];
             }
           });

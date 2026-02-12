@@ -1,12 +1,12 @@
 {
     "/api/*": {
-      "target": "https://altoeditor.inovatika.dev",
+      "target": "http://localhost:8080",
       "secure": false,
       "logLevel": "debug",
       "changeOrigin": true
     },
     "/auth/realms/*": {
-      "target": "https://k7.inovatika.dev",
+      "target": "https://login.kramerius.mzk.cz",
       "secure": false,
       "logLevel": "debug",
       "changeOrigin": true

@@ -1,0 +1,29 @@
+@use '@angular/material' as mat;
+
+.app-toolbar {
+    .app-toolbar-start {
+        display: flex;
+        align-items: center;
+        gap: 10px !important;
+    }
+
+    .app-toolbar-group {
+        display: flex;
+        align-items: center;
+        gap: 2px;
+
+        &:not(:first-child) {
+            margin-left: 12px;
+            padding-left: 12px;
+            border-left: 1px solid #e0e0e0;
+        }
+    }
+
+    .app-panel-mode-toggle {
+        @include mat.button-toggle-density(-4);
+
+        mat-button-toggle {
+            width: 45px;
+        }
+    }
+}

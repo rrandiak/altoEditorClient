@@ -165,15 +165,16 @@ $states: (
   PLANNED: $app-color-info,
   RUNNING: mat-color($mat-blue-gray, 600),
   FAILED: $app-color-warn,
-  REJECTED: $app-color-warn,
   DONE: $app-color-success,
   DOWNLOADING: mat-color($mat-teal, 500),
   GENERATING: mat-color($mat-purple, 500),
   SAVING: mat-color($mat-brown, 500),
 
-  EDITED: $app-color-success,
-  ACCEPTED: mat-color($mat-brown, 500),
-  UPLOADED: mat-color($mat-teal, 500),
+  ACTIVE: $app-color-success,
+  PENDING: $app-color-info,
+  REJECTED: $app-color-warn,
+  ARCHIVED: $app-color-disabled,
+  STALE: $app-color-warn,
 
   NEW: mat-color($mat-blue, 500),
   GENERATED: $app-color-success

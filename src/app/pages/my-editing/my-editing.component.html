@@ -5,55 +5,61 @@
       <span class="app-separator">/</span>
       <span class="app-last">{{ 'navbar.my_objects' | translate }}</span>
     </div>
-    <div class="app-h-100">
-
-    </div>
+    <div class="app-h-100"></div>
   </div>
   <div class="app-content-wrapper app-fxFlex app-oh">
     <div class="app-oa-y app-h-100">
       <div class="app-border-wrapper">
-        <table mat-table [dataSource]="digitalObjects" class="app-w-100 app-striped app-hover" matSort
+        <table mat-table [dataSource]="versions" class="app-w-100 app-striped app-hover" matSort
           (matSortChange)="onSortChange($event)">
-
-
-          <ng-container matColumnDef="id-filter">
-            <th mat-header-cell *matHeaderCellDef></th>
-          </ng-container>
-          <ng-container matColumnDef="id">
-            <th mat-header-cell *matHeaderCellDef>id</th>
-            <td mat-cell *matCellDef="let element">{{ element.id }}</td>
-          </ng-container>
 
           <ng-container matColumnDef="label-filter">
             <th mat-header-cell *matHeaderCellDef>
               <mat-form-field>
-                <input matInput type="text" id="labelFilter" [(ngModel)]="labelFilter"
-                  (change)="filter('label', labelFilter)" [placeholder]="'desc.filterByLabel' | translate">
-                <button mat-icon-button matIconSuffix color="warn" *ngIf="labelFilter"
-                  (click)="filter('label', ''); labelFilter = ''"><mat-icon>clear</mat-icon></button>
+                <input matInput type="text" id="titleFilter" [(ngModel)]="titleFilter"
+                  (change)="filter('title', titleFilter)" [placeholder]="'desc.filterByLabel' | translate">
+                <button mat-icon-button matIconSuffix color="warn" *ngIf="titleFilter"
+                  (click)="filter('title', ''); titleFilter = ''"><mat-icon>clear</mat-icon></button>
               </mat-form-field>
             </th>
           </ng-container>
           <ng-container matColumnDef="label">
-            <th mat-header-cell *matHeaderCellDef>{{ 'desc.label' | translate }}</th>
-            <td mat-cell *matCellDef="let element">{{ element.parentLabel }} - {{ element.label }}</td>
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>{{ 'desc.label' | translate }}</th>
+            <td mat-cell *matCellDef="let element">{{ versionLabel(element) }}</td>
           </ng-container>
 
-          <ng-container matColumnDef="datum-filter">
+          <ng-container matColumnDef="createdAt-filter">
             <th mat-header-cell *matHeaderCellDef>
               <mat-form-field>
-                <input matInput [matDatepicker]="picker" [formControl]="datum"
-                  (dateChange)="dateChanged($event, datum, 'datum')" [placeholder]="'desc.filterByDate' | translate">
-                <button mat-icon-button matIconSuffix color="warn" *ngIf="datum.value"
-                  (click)="datum.setValue(null);this.filter('datum', '')"><mat-icon>clear</mat-icon></button>
-                <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
-                <mat-datepicker #picker></mat-datepicker>
+                <input matInput [matDatepicker]="pickerCreated" [formControl]="createdAfterFilter"
+                  (dateChange)="createdAfterChanged($event, createdAfterFilter)" [placeholder]="'desc.filterByDate' | translate">
+                <button mat-icon-button matIconSuffix color="warn" *ngIf="createdAfterFilter.value"
+                  (click)="createdAfterFilter.setValue(null); filter('createdAfter', '')"><mat-icon>clear</mat-icon></button>
+                <mat-datepicker-toggle matIconSuffix [for]="pickerCreated"></mat-datepicker-toggle>
+                <mat-datepicker #pickerCreated></mat-datepicker>
               </mat-form-field>
             </th>
           </ng-container>
-          <ng-container matColumnDef="datum">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header>{{ 'desc.date' | translate }}</th>
-            <td mat-cell *matCellDef="let element">{{ element.datum | date : 'dd.MM.yyyy HH:mm:SS' }}</td>
+          <ng-container matColumnDef="createdAt">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>{{ 'desc.createdAt' | translate }}</th>
+            <td mat-cell *matCellDef="let element">{{ element.createdAt | date : 'dd.MM.yyyy HH:mm:ss' }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="updatedAt-filter">
+            <th mat-header-cell *matHeaderCellDef>
+              <mat-form-field>
+                <input matInput [matDatepicker]="pickerUpdated" [formControl]="updatedAfterFilter"
+                  (dateChange)="updatedAfterChanged($event, updatedAfterFilter)" [placeholder]="'desc.filterByDate' | translate">
+                <button mat-icon-button matIconSuffix color="warn" *ngIf="updatedAfterFilter.value"
+                  (click)="updatedAfterFilter.setValue(null); filter('updatedAfter', '')"><mat-icon>clear</mat-icon></button>
+                <mat-datepicker-toggle matIconSuffix [for]="pickerUpdated"></mat-datepicker-toggle>
+                <mat-datepicker #pickerUpdated></mat-datepicker>
+              </mat-form-field>
+            </th>
+          </ng-container>
+          <ng-container matColumnDef="updatedAt">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>{{ 'desc.updatedAt' | translate }}</th>
+            <td mat-cell *matCellDef="let element">{{ element.updatedAt | date : 'dd.MM.yyyy HH:mm:ss' }}</td>
           </ng-container>
 
           <ng-container matColumnDef="state-filter">
@@ -71,8 +77,7 @@
           <ng-container matColumnDef="state">
             <th mat-header-cell *matHeaderCellDef mat-sort-header>{{ 'desc.state' | translate }}</th>
             <td mat-cell *matCellDef="let element">
-              <span *ngIf="element.state" class="app-badge" [ngClass]="'app-' + element.state">{{ 'state.' +
-                element.state | translate }}</span>
+              <span *ngIf="element.state" class="app-badge" [ngClass]="'app-' + element.state">{{ 'state.' + element.state | translate }}</span>
             </td>
           </ng-container>
 
@@ -91,18 +96,12 @@
             <td mat-cell *matCellDef="let element">{{ element.pid }}</td>
           </ng-container>
 
-          <ng-container matColumnDef="user">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header>{{ 'desc.edited' | translate }}</th>
-            <td mat-cell *matCellDef="let element">{{ element.userLogin }}</td>
-          </ng-container>
-
           <ng-container matColumnDef="actions-filter">
             <th mat-header-cell *matHeaderCellDef></th>
           </ng-container>
           <ng-container matColumnDef="actions">
             <th mat-header-cell *matHeaderCellDef></th>
-            <td mat-cell *matCellDef="let element">
-              <!-- <a [routerLink]="[element.version]" [matTooltip]="'button.viewDetail' | translate"><mat-icon>visibility</mat-icon></a> -->
+            <td mat-cell *matCellDef="let element" (click)="$event.stopPropagation()">
               <a (click)="gotoToObject(element)" [matTooltip]="'button.edit' | translate"><mat-icon>edit</mat-icon></a>
             </td>
           </ng-container>

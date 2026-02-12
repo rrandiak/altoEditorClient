@@ -1,6 +1,4 @@
-
 export class User {
-
   authenticated: boolean = false;
   uid: string;
   name: string;
@@ -22,8 +20,7 @@ export class User {
     return null;
   }
 
-  constructor() {
-  }
+  constructor() {}
 
   isLoggedIn(): boolean {
     return this.authenticated;

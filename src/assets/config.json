@@ -1,10 +1,10 @@
 {
-  "login": "inovatika",
-  "instance": "k7",
+  "login": "k7-mzk",
+  "instance": "k7-mzk",
   "defaultLang": "cs",
   "deployPath": "",
-  "clientBaseUrl": "https://altoeditor.inovatika.dev/api",
-  "authBaseUrl": "https://k7.inovatika.dev/search/api/client/v7.0",
+  "clientBaseUrl": "http://localhost:8080/api",
+  "authBaseUrl": "https://api.kramerius.mzk.cz/search/api/client/v7.0",
   "keycloak": {
 		"loginType": "form",
 		"logoutUrl": "/login" 

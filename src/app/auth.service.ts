@@ -5,6 +5,7 @@ import { map } from 'rxjs/operators';
 import { RightAction } from './shared/right-action.model';
 import { Router } from '@angular/router';
 import { AppConfiguration } from './app-configuration';
+import { AppState } from './shared/app.state';
 import { User } from './shared/user.model';
 
 @Injectable()
@@ -30,10 +31,11 @@ export class AuthService {
   authorizedSpecificActions: any =  {};
 
   constructor(
-    private http: HttpClient, 
+    private http: HttpClient,
     private settings: AppConfiguration,
-    private router:Router
-    ) {
+    private router: Router,
+    private appState: AppState,
+  ) {
     AuthService.token = localStorage.getItem('account.token');
     AuthService.tokenTime = new Date(localStorage.getItem('account.token.time'));
     this.loadGlobalAuthorizedActions((status: number) => {
@@ -96,6 +98,9 @@ export class AuthService {
     localStorage.removeItem('account.token');
     localStorage.removeItem('account.token.time');
     this.user = null;
+    this.appState.currentUser = null;
+    this.appState.krameriusUsers = [];
+    this.appState.engineUsers = [];
 
     const redircetUri = `${this.baseUrl()}${suffix}`;
     //let url = `${this.settings.keycloak.baseUrl}/realms/kramerius/protocol/openid-connect/logout`;

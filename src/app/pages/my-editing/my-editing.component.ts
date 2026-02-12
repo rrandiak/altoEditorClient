@@ -3,37 +3,36 @@ import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTableModule } from '@angular/material/table';
-import { TranslateModule } from '@ngx-translate/core';
-import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { Router, RouterModule } from '@angular/router';
+import { TranslateModule } from '@ngx-translate/core';
 import { AppConfiguration } from 'src/app/app-configuration';
 import { AppService } from 'src/app/app.service';
+import { AppState } from 'src/app/shared/app.state';
 import { MatSortModule, Sort } from '@angular/material/sort';
 import {
   MatPaginatorIntl,
   MatPaginatorModule,
 } from '@angular/material/paginator';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import {
   DateAdapter,
   MAT_DATE_LOCALE,
   MatNativeDateModule,
 } from '@angular/material/core';
+import { PaginatorI18n } from 'src/app/shared/paginator-i18n';
 import { MatDatepickerModule } from '@angular/material/datepicker';
+import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
 import { MatInputModule } from '@angular/material/input';
-import { PaginatorI18n } from 'src/app/shared/paginator-i18n';
 import {
   AltoVersion,
   AltoVersionSearchRequest,
   AltoVersionState,
 } from 'src/app/shared/alto-version';
-import { UserInfo } from 'src/app/shared/user-info';
-import { Pageable } from 'src/app/shared/pageable';
 
 @Component({
-  selector: 'app-revision',
+  selector: 'app-my-editing',
   standalone: true,
   providers: [
     { provide: MAT_DATE_LOCALE, useValue: 'cs' },
@@ -46,25 +45,24 @@ import { Pageable } from 'src/app/shared/pageable';
     MatSortModule,
     FormsModule,
     ReactiveFormsModule,
+    MatFormFieldModule,
+    MatSelectModule,
     MatIconModule,
     MatButtonModule,
     MatTableModule,
-    MatFormFieldModule,
-    MatSelectModule,
-    MatInputModule,
     MatTooltipModule,
     MatPaginatorModule,
     MatDatepickerModule,
     MatNativeDateModule,
+    MatInputModule,
   ],
-  templateUrl: './revision.component.html',
-  styleUrls: ['./revision.component.scss'],
+  templateUrl: './my-editing.component.html',
+  styleUrls: ['./my-editing.component.scss'],
 })
-export class RevisionComponent {
+export class MyEditingComponent {
   displayedColumns: string[] = [
     'label',
-    'username',
-    'version',
+    'createdAt',
     'updatedAt',
     'state',
     'pid',
@@ -72,30 +70,38 @@ export class RevisionComponent {
   ];
   filterColumns: string[] = [];
 
-  labelFilter = '';
-  userFilter = '';
-  updatedAfterFilter = new FormControl();
-  stateFilter = '';
-  pidFilter = '';
-
-  states: string[] = Object.values(AltoVersionState);
-  users: UserInfo[] = [];
-  filters: { field: string; value: string }[] = [];
-
-  revisions: AltoVersion[] = [];
+  versions: AltoVersion[] = [];
   sortBy = 'updatedAt';
   orderSort: 'asc' | 'desc' = 'desc';
   totalRows = 0;
   pageIndex = 0;
   pageSize = 25;
 
+  titleFilter = '';
+  createdAfterFilter = new FormControl();
+  updatedAfterFilter = new FormControl();
+  stateFilter = '';
+  pidFilter = '';
+  filters: { field: string; value: string }[] = [];
+
+  states: string[] = Object.values(AltoVersionState);
+
+  /** Format Date to LocalDateTime ISO string for backend (YYYY-MM-DDTHH:mm:ss). */
+  private toLocalDateTime(d: Date, endOfDay: boolean): string {
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    const time = endOfDay ? '23:59:59' : '00:00:00';
+    return `${y}-${m}-${day}T${time}`;
+  }
+
   constructor(
     private _adapter: DateAdapter<unknown>,
     @Inject(MAT_DATE_LOCALE) private _locale: string,
     private router: Router,
-    private route: ActivatedRoute,
     private config: AppConfiguration,
     private service: AppService,
+    public state: AppState,
   ) {}
 
   ngOnInit(): void {
@@ -103,11 +109,6 @@ export class RevisionComponent {
     this.displayedColumns.forEach((c) => {
       this.filterColumns.push(c + '-filter');
     });
-    this.service
-      .fetchUsers({ page: 0, size: 1000 })
-      .subscribe((res: Pageable<UserInfo>) => {
-        this.users = res.content;
-      });
     this.search();
   }
 
@@ -120,33 +121,40 @@ export class RevisionComponent {
       orderBy: this.sortBy,
       orderSort: this.orderSort,
     };
-    if (this.labelFilter?.trim()) {
-      request.title = this.labelFilter.trim();
+    if (this.state.currentUser?.username) {
+      request.users = [this.state.currentUser.username];
     }
-    if (this.userFilter) {
-      request.users = [this.userFilter];
+    if (this.titleFilter?.trim()) {
+      request.title = this.titleFilter.trim();
+    }
+    if (this.createdAfterFilter.value) {
+      const d = this.createdAfterFilter.value as Date;
+      request.createdAfter = this.toLocalDateTime(d, false);
     }
     if (this.updatedAfterFilter.value) {
-      request.updatedAfter = this.toLocalDateTime(
-        this.updatedAfterFilter.value,
-        false,
-      );
+      const d = this.updatedAfterFilter.value as Date;
+      request.updatedAfter = this.toLocalDateTime(d, false);
     }
     if (this.stateFilter) {
       request.states = [this.stateFilter as AltoVersionState];
     }
     if (this.pidFilter?.trim()) {
       request.targetPid = this.pidFilter.trim();
+      request.hierarchyPid = this.pidFilter.trim();
     }
     return request;
   }
 
   search(): void {
     const request = this.buildSearchRequest();
-    this.service.searchAltoVersions(request).subscribe((res) => {
-      this.revisions = res.items ?? [];
+    this.service.searchRelatedAltoVersions(request).subscribe((res) => {
+      this.versions = res.items ?? [];
       this.totalRows = res.total ?? 0;
     });
+  }
+
+  gotoToObject(version: AltoVersion): void {
+    this.router.navigate(['/', version.pid, 'editing']);
   }
 
   onSortChange(e: Sort): void {
@@ -156,11 +164,22 @@ export class RevisionComponent {
     this.search();
   }
 
-  navigate(pid: string): void {
-    this.router.navigate([pid], { relativeTo: this.route });
+  onPageChanged(e: { pageSize: number; pageIndex: number }): void {
+    this.pageSize = e.pageSize;
+    this.pageIndex = e.pageIndex;
+    this.search();
   }
 
-  updatedAfterChanged(e: unknown, control: FormControl): void {
+  createdAfterChanged(_e: unknown, control: FormControl): void {
+    const value = control.value as Date | null;
+    if (value) {
+      this.filter('createdAfter', this.toLocalDateTime(value, false));
+    } else {
+      this.filter('createdAfter', '');
+    }
+  }
+
+  updatedAfterChanged(_e: unknown, control: FormControl): void {
     const value = control.value as Date | null;
     if (value) {
       this.filter('updatedAfter', this.toLocalDateTime(value, false));
@@ -176,22 +195,16 @@ export class RevisionComponent {
     } else {
       this.filters.push({ field, value });
     }
-    if (field === 'label') this.labelFilter = value;
+    if (field === 'title') this.titleFilter = value;
+    if (field === 'createdAfter' && !value)
+      this.createdAfterFilter.setValue(null);
     if (field === 'updatedAfter' && !value)
       this.updatedAfterFilter.setValue(null);
-    if (field === 'username') this.userFilter = value;
     if (field === 'state') this.stateFilter = value;
     if (field === 'pid') this.pidFilter = value;
     this.search();
   }
 
-  onPageChanged(e: { pageSize: number; pageIndex: number }): void {
-    this.pageSize = e.pageSize;
-    this.pageIndex = e.pageIndex;
-    this.search();
-  }
-
-  /** Label for table: ancestor path + page title */
   versionLabel(row: AltoVersion): string {
     if (row.ancestorTitles?.length) {
       return (
@@ -199,13 +212,5 @@ export class RevisionComponent {
       );
     }
     return row.pageTitle ?? row.pid;
-  }
-
-  private toLocalDateTime(d: Date, endOfDay: boolean): string {
-    const y = d.getFullYear();
-    const m = String(d.getMonth() + 1).padStart(2, '0');
-    const day = String(d.getDate()).padStart(2, '0');
-    const time = endOfDay ? '23:59:59' : '00:00:00';
-    return `${y}-${m}-${day}T${time}`;
   }
 }

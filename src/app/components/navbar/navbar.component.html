@@ -4,7 +4,7 @@
   </div>
   <div>
    <!-- <a mat-button [routerLink]="[pid, 'editing']" routerLinkActive="active">{{ 'navbar.editing' | translate }}</a> -->
-   <a mat-button [routerLink]="['/home']"   routerLinkActive="active">{{ 'navbar.my_objects' | translate }}</a>
+   <a mat-button [routerLink]="['/my-editing']" routerLinkActive="active">{{ 'navbar.my_objects' | translate }}</a>
    <a mat-button [routerLink]="['/revision']"   routerLinkActive="active">{{ 'navbar.revision' | translate }}</a>
    <a mat-button [routerLink]="['/process-management']"   routerLinkActive="active">{{ 'navbar.processManagement' | translate }}</a>
    <ng-container *ngIf="auth.isLoggedIn()">

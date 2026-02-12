@@ -5,53 +5,49 @@
       <span class="app-separator">/</span>
       <span class="app-last">{{ 'navbar.revision' | translate }}</span>
     </div>
-    <div class="app-h-100">
-      
-    </div>
+    <div class="app-h-100"></div>
   </div>
   <div class="app-content-wrapper app-fxFlex app-oh">
     <div class="app-oa-y app-h-100 app-border-wrapper">
       <table mat-table [dataSource]="revisions" class="app-w-100 app-striped app-hover"
         matSort (matSortChange)="onSortChange($event)">
-        
-        <ng-container matColumnDef="id-filter">
-          <th mat-header-cell *matHeaderCellDef></th>
-        </ng-container>
-        <ng-container matColumnDef="id">
-          <th mat-header-cell *matHeaderCellDef>{{ 'desc.id' | translate }}</th>
-          <td mat-cell *matCellDef="let element">{{ element.id }}</td>
-        </ng-container>
-      
-      
+
         <ng-container matColumnDef="label-filter">
           <th mat-header-cell *matHeaderCellDef>
-            <mat-form-field >
+            <mat-form-field>
               <input matInput type="text" id="labelFilter" [(ngModel)]="labelFilter" (change)="filter('label', labelFilter)" [placeholder]="'desc.filterByLabel' | translate">
               <button mat-icon-button matIconSuffix color="warn" *ngIf="labelFilter" (click)="filter('label', ''); labelFilter = ''"><mat-icon>clear</mat-icon></button>
             </mat-form-field>
-           </th>
+          </th>
         </ng-container>
         <ng-container matColumnDef="label">
           <th mat-header-cell *matHeaderCellDef mat-sort-header>{{ 'desc.label' | translate }}</th>
-          <td mat-cell *matCellDef="let element">{{ element.parentLabel }} - {{ element.label }}</td>
+          <td mat-cell *matCellDef="let element">{{ versionLabel(element) }}</td>
         </ng-container>
-  
-        <ng-container matColumnDef="datum-filter">
+
+        <ng-container matColumnDef="updatedAt-filter">
           <th mat-header-cell *matHeaderCellDef>
             <mat-form-field>
-              <input matInput [matDatepicker]="picker" [formControl]="datum" (dateChange)="dateChanged($event, datum, 'datum')" [placeholder]="'desc.filterByDate' | translate">
-              <button mat-icon-button matIconSuffix color="warn" *ngIf="datum.value" (click)="datum.setValue(null);this.filter('datum', '')"><mat-icon>clear</mat-icon></button>
+              <input matInput [matDatepicker]="picker" [formControl]="updatedAfterFilter" (dateChange)="updatedAfterChanged($event, updatedAfterFilter)" [placeholder]="'desc.filterByDate' | translate">
+              <button mat-icon-button matIconSuffix color="warn" *ngIf="updatedAfterFilter.value" (click)="updatedAfterFilter.setValue(null); filter('updatedAfter', '')"><mat-icon>clear</mat-icon></button>
               <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
               <mat-datepicker #picker></mat-datepicker>
             </mat-form-field>
           </th>
         </ng-container>
-        <ng-container matColumnDef="datum">
-          <th mat-header-cell *matHeaderCellDef mat-sort-header>{{ 'desc.date' | translate }}</th>
-          <td mat-cell *matCellDef="let element">{{ element.datum | date : 'dd.MM.yyyy HH:mm:SS' }}</td>
+        <ng-container matColumnDef="updatedAt">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>{{ 'desc.updatedAt' | translate }}</th>
+          <td mat-cell *matCellDef="let element">{{ element.updatedAt | date : 'dd.MM.yyyy HH:mm:ss' }}</td>
         </ng-container>
-      
-  
+
+        <ng-container matColumnDef="version-filter">
+          <th mat-header-cell *matHeaderCellDef></th>
+        </ng-container>
+        <ng-container matColumnDef="version">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>{{ 'desc.version' | translate }}</th>
+          <td mat-cell *matCellDef="let element">{{ element.version }}</td>
+        </ng-container>
+
         <ng-container matColumnDef="state-filter">
           <th mat-header-cell *matHeaderCellDef>
             <mat-form-field>
@@ -64,50 +60,49 @@
         </ng-container>
         <ng-container matColumnDef="state">
           <th mat-header-cell *matHeaderCellDef mat-sort-header>{{ 'desc.state' | translate }}</th>
-          <td mat-cell *matCellDef="let element" (click)="stateFilter = element.state; filter('state', stateFilter); $event.stopPropagation();">
+          <td mat-cell *matCellDef="let element" (click)="stateFilter = element.state; filter('state', element.state); $event.stopPropagation();">
             <span class="app-badge" [ngClass]="'app-' + element.state">{{ 'state.' + element.state | translate }}</span>
           </td>
         </ng-container>
-      
-      
+
         <ng-container matColumnDef="pid-filter">
           <th mat-header-cell *matHeaderCellDef>
-            <mat-form-field >
+            <mat-form-field>
               <input matInput type="text" id="pidFilter" [(ngModel)]="pidFilter" (change)="filter('pid', pidFilter)" [placeholder]="'desc.filterByPid' | translate">
               <button mat-icon-button matIconSuffix color="warn" *ngIf="pidFilter" (click)="filter('pid', ''); pidFilter = ''"><mat-icon>clear</mat-icon></button>
             </mat-form-field>
-           </th>
+          </th>
         </ng-container>
         <ng-container matColumnDef="pid">
           <th mat-header-cell *matHeaderCellDef>{{ 'desc.pid' | translate }}</th>
           <td mat-cell *matCellDef="let element">{{ element.pid }}</td>
         </ng-container>
-            
-        <ng-container matColumnDef="userLogin-filter">
+
+        <ng-container matColumnDef="username-filter">
           <th mat-header-cell *matHeaderCellDef>
             <mat-form-field>
-              <mat-select [(ngModel)]="userFilter" (ngModelChange)="filter('userLogin', userFilter)" panelClass="app-panel-table-header" [placeholder]="'desc.filterByUser' | translate">
-                <mat-option *ngFor="let s of users" [value]="s.login">{{ s.login }}</mat-option>
+              <mat-select [(ngModel)]="userFilter" (ngModelChange)="filter('username', userFilter)" panelClass="app-panel-table-header" [placeholder]="'desc.filterByUser' | translate">
+                <mat-option *ngFor="let u of users" [value]="u.username">{{ u.username }}</mat-option>
               </mat-select>
-              <button mat-icon-button matIconSuffix color="warn" *ngIf="userFilter" (click)="filter('userLogin', ''); userFilter = ''; $event.stopPropagation();"><mat-icon>clear</mat-icon></button>
+              <button mat-icon-button matIconSuffix color="warn" *ngIf="userFilter" (click)="filter('username', ''); userFilter = ''; $event.stopPropagation();"><mat-icon>clear</mat-icon></button>
             </mat-form-field>
           </th>
         </ng-container>
-        <ng-container matColumnDef="userLogin">
+        <ng-container matColumnDef="username">
           <th mat-header-cell *matHeaderCellDef mat-sort-header>{{ 'desc.edited' | translate }}</th>
-          <td mat-cell *matCellDef="let element" (click)="userFilter = element.userLogin; filter('userLogin', userFilter); $event.stopPropagation();">{{ element.userLogin }}</td>
+          <td mat-cell *matCellDef="let element" (click)="userFilter = element.username; filter('username', element.username); $event.stopPropagation();">{{ element.username }}</td>
         </ng-container>
-      
+
         <ng-container matColumnDef="actions-filter">
           <th mat-header-cell *matHeaderCellDef></th>
         </ng-container>
         <ng-container matColumnDef="actions">
           <th mat-header-cell *matHeaderCellDef></th>
-          <td mat-cell *matCellDef="let element">
+          <td mat-cell *matCellDef="let element" (click)="$event.stopPropagation()">
             <a [routerLink]="[element.pid]" [matTooltip]="'button.viewDetail' | translate"><mat-icon>visibility</mat-icon></a>
           </td>
         </ng-container>
-      
+
         <tr mat-header-row *matHeaderRowDef="filterColumns; sticky: false"></tr>
         <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
         <tr mat-row *matRowDef="let row; columns: displayedColumns;" [routerLink]="[row.pid]" class="app-cursor-pointer" (click)="navigate(row.pid)"></tr>

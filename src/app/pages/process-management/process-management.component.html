@@ -35,34 +35,34 @@
           <td mat-cell *matCellDef="let element">{{ element.pid }}</td>
         </ng-container>
   
-        <ng-container matColumnDef="createDate-filter">
+        <ng-container matColumnDef="createdAt-filter">
           <th mat-header-cell *matHeaderCellDef>
             <mat-form-field>
-              <input matInput [matDatepicker]="picker" [formControl]="createDate" (dateChange)="dateChanged($event, createDate, 'createDate')" [placeholder]="'desc.filterByCreateDate' | translate">
-              <button mat-icon-button matIconSuffix color="warn" *ngIf="createDate.value" (click)="createDate.setValue(null);this.filter('createDate', '')"><mat-icon>clear</mat-icon></button>
+              <input matInput [matDatepicker]="picker" [formControl]="createDate" (dateChange)="dateChanged($event, createDate, 'createdAt')" [placeholder]="'desc.filterByCreateDate' | translate">
+              <button mat-icon-button matIconSuffix color="warn" *ngIf="createDate.value" (click)="createDate.setValue(null);this.filter('createdAt', '')"><mat-icon>clear</mat-icon></button>
               <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
               <mat-datepicker #picker></mat-datepicker>
             </mat-form-field>
           </th>
         </ng-container>
-        <ng-container matColumnDef="createDate">
+        <ng-container matColumnDef="createdAt">
           <th mat-header-cell *matHeaderCellDef mat-sort-header>{{ 'desc.createDate' | translate }}</th>
-          <td mat-cell *matCellDef="let element">{{ element.createDate | date : 'dd.MM.yyyy HH:mm:SS' }}</td>
+          <td mat-cell *matCellDef="let element">{{ element.createdAt | date : 'dd.MM.yyyy HH:mm:ss' }}</td>
         </ng-container>
   
-        <ng-container matColumnDef="updateDate-filter">
+        <ng-container matColumnDef="updatedAt-filter">
           <th mat-header-cell *matHeaderCellDef>
             <mat-form-field>
-              <input matInput [matDatepicker]="picker2" [formControl]="updateDate" (dateChange)="dateChanged($event, updateDate, 'updateDate')" [placeholder]="'desc.filterByUpdateDate' | translate">
-              <button mat-icon-button matIconSuffix color="warn" *ngIf="updateDate.value" (click)="updateDate.setValue(null);this.filter('updateDate', '')"><mat-icon>clear</mat-icon></button>
+              <input matInput [matDatepicker]="picker2" [formControl]="updateDate" (dateChange)="dateChanged($event, updateDate, 'updatedAt')" [placeholder]="'desc.filterByUpdateDate' | translate">
+              <button mat-icon-button matIconSuffix color="warn" *ngIf="updateDate.value" (click)="updateDate.setValue(null);this.filter('updatedAt', '')"><mat-icon>clear</mat-icon></button>
               <mat-datepicker-toggle matIconSuffix [for]="picker2"></mat-datepicker-toggle>
               <mat-datepicker #picker2></mat-datepicker>
             </mat-form-field>
           </th>
         </ng-container>
-        <ng-container matColumnDef="updateDate">
+        <ng-container matColumnDef="updatedAt">
           <th mat-header-cell *matHeaderCellDef mat-sort-header>{{ 'desc.updateDate' | translate }}</th>
-          <td mat-cell *matCellDef="let element">{{ element.updateDate | date : 'dd.MM.yyyy HH:mm:SS' }}</td>
+          <td mat-cell *matCellDef="let element">{{ element.updatedAt | date : 'dd.MM.yyyy HH:mm:ss' }}</td>
         </ng-container>
   
         <ng-container matColumnDef="state-filter">
@@ -78,7 +78,7 @@
         <ng-container matColumnDef="state">
           <th mat-header-cell *matHeaderCellDef mat-sort-header>{{ 'desc.state' | translate }}</th>
           <td mat-cell *matCellDef="let element" (click)="filter('state', element.state)">
-            <span *ngIf="element.state" class="app-badge" [ngClass]="'app-' + element.state" [matTooltip]="element.log !== 'null' ? element.log : ''">{{ 'state.' + element.state | translate }}</span>
+            <span *ngIf="element.state" class="app-badge" [ngClass]="'app-' + element.state" [matTooltip]="element.log ?? ''">{{ 'state.' + element.state | translate }}</span>
           </td>
         </ng-container>
 

@@ -3,6 +3,7 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
 import { AuthService } from 'src/app/auth.service';
+import { AppService } from 'src/app/app.service';
 
 @Component({
   selector: 'app-auth',
@@ -13,6 +14,7 @@ import { AuthService } from 'src/app/auth.service';
 export class AuthComponent implements OnInit {
 
   constructor(private auth: AuthService,
+              private appService: AppService,
               private route: ActivatedRoute,
               public router: Router) { }
 
@@ -25,7 +27,10 @@ export class AuthComponent implements OnInit {
       localStorage.removeItem('login.url');
       this.auth.keycloakAuth(code, (status: number) => {
         if (status == AuthService.AUTH_AUTHORIZED) {
-          this.router.navigateByUrl(target);
+          this.appService.loadSession().subscribe({
+            next: () => this.router.navigateByUrl(target),
+            error: () => this.router.navigateByUrl(target),
+          });
         } else if (status == AuthService.AUTH_NOT_AUTHORIZED) {
           this.auth.logout('/login?failure=1');
         } else {
