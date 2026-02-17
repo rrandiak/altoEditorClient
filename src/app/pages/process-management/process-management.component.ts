@@ -7,7 +7,12 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { AppConfiguration } from 'src/app/app-configuration';
 import { AppService } from 'src/app/app.service';
-import { Batch, BatchSearchRequest } from 'src/app/shared/batch';
+import {
+  Batch,
+  BatchPriority,
+  BatchSearchFilters,
+  BatchState,
+} from 'src/app/shared/batch';
 import { MatSortModule } from '@angular/material/sort';
 import {
   MatPaginatorIntl,
@@ -32,7 +37,6 @@ import {
 import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatButtonModule } from '@angular/material/button';
-import { BATCH_PRIORITIES, BATCH_STATES } from 'src/app/shared/constants';
 import { PaginatorI18n } from 'src/app/shared/paginator-i18n';
 
 const today = new Date();
@@ -68,6 +72,9 @@ const year = today.getFullYear();
   styleUrls: ['./process-management.component.scss'],
 })
 export class ProcessManagementComponent {
+  states: BatchState[] = Object.values(BatchState);
+  priorities: BatchPriority[] = Object.values(BatchPriority);
+
   displayedColumns: string[] = [
     'id',
     'pid',
@@ -82,22 +89,24 @@ export class ProcessManagementComponent {
   filterColumns: string[] = [];
 
   batches: Batch[] = [];
+  filters: BatchSearchFilters = {};
+  dateFormControls: { createdAfter: FormControl; updatedAfter: FormControl } = {
+    createdAfter: new FormControl(),
+    updatedAfter: new FormControl(),
+  };
   sortBy: string = 'updatedAt';
   orderSort: string = 'desc';
   totalRows: number = 0;
   pageIndex: number = 0;
-  pageSize: number = 10;
+  pageSize: number = 25;
 
-  pidFilter: string;
-  states: string[] = [];
-  stateFilter: string = '';
-  priorities: string[] = [];
-  priorityFilter: string = '';
-
-  filters: { field: string; value: string }[] = [];
-
-  createDate = new FormControl();
-  updateDate = new FormControl();
+  // pidFilter: string;
+  // createdAfterFilter = new FormControl();
+  // updatedAfterFilter = new FormControl();
+  // stateFilter: string;
+  // priorityFilter: string;
+  // typeFilter: string;
+  // instanceFilter: string;
 
   constructor(
     private _adapter: DateAdapter<any>,
@@ -110,8 +119,6 @@ export class ProcessManagementComponent {
   ngOnInit() {
     this._locale = 'cs';
     this._adapter.setLocale(this._locale);
-    this.states = Object.values(BATCH_STATES);
-    this.priorities = Object.values(BATCH_PRIORITIES);
 
     this.getBatches();
     this.displayedColumns.forEach((c) => {
@@ -119,35 +126,10 @@ export class ProcessManagementComponent {
     });
   }
 
-  buildSearchRequest(): BatchSearchRequest {
-    const request: BatchSearchRequest = {
-      instance: null,
-    };
-    if (this.pidFilter?.trim()) request.pid = this.pidFilter.trim();
-    if (this.stateFilter) request.state = this.stateFilter;
-    if (this.priorityFilter) request.priority = this.priorityFilter;
-    if (this.createDate.value) {
-      const d: Date = this.createDate.value;
-      d.setHours(0, 0, 0, 0);
-      const iso = d.toISOString().split('T')[0];
-      request.createdAfter = iso;
-      request.createdBefore = iso;
-    }
-    if (this.updateDate.value) {
-      const d: Date = this.updateDate.value;
-      d.setHours(0, 0, 0, 0);
-      const iso = d.toISOString().split('T')[0];
-      request.updatedAfter = iso;
-      request.updatedBefore = iso;
-    }
-    return request;
-  }
-
   getBatches() {
-    const request = this.buildSearchRequest();
     const offset = this.pageIndex * this.pageSize;
     this.service
-      .searchBatches(request, {
+      .searchBatches(this.filters, {
         offset,
         limit: this.pageSize,
         orderBy: this.sortBy,
@@ -159,30 +141,43 @@ export class ProcessManagementComponent {
       });
   }
 
-  onSortChange(e: any) {
-    console.log(e);
-    this.sortBy = e.active ? e.active : 'updatedAt';
-    this.orderSort = e.direction ? e.direction : 'desc';
+  onSortChange(e: { active: string; direction: 'asc' | 'desc' | '' }) {
+    this.sortBy = e.active || 'updatedAt';
+    this.orderSort = e.direction === 'asc' || e.direction === 'desc' ? e.direction : 'desc';
+    this.pageIndex = 0;
     this.getBatches();
   }
 
-  dateChanged(e: any, control: FormControl, field: string) {
-    if (control.value) {
-      const d: Date = control.value;
-      d.setHours(10); // jinak dostaneme o den min kvuli GMT+1
-      this.filter(field, d.toISOString().split('T')[0]);
-    } else {
-      this.filter(field, '');
-    }
+  filter(field: string, value: string | undefined): void {
+    const trimmed = value != null ? String(value).trim() : '';
+    this.filters[field as keyof BatchSearchFilters] = trimmed || undefined;
+    this.pageIndex = 0;
+    this.getBatches();
   }
 
-  filter(field: string, value: string) {
-    const f = this.filters.find((f) => f.field === field);
-    if (f) {
-      f.value = value;
-    } else {
-      this.filters.push({ field, value });
+  filterDate(
+    field: 'createdAfter' | 'updatedAfter',
+    control: FormControl | null,
+    endOfDay: boolean,
+  ): void {
+    if (!control) {
+      this.filters[field] = undefined;
+      this.dateFormControls[field].setValue(null);
+      this.pageIndex = 0;
+      this.getBatches();
+      return;
     }
+    if (control.value) {
+      const d = control.value as Date;
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      const time = endOfDay ? '23:59:59' : '00:00:00';
+      this.filters[field] = `${y}-${m}-${day}T${time}`;
+    } else {
+      this.filters[field] = undefined;
+    }
+    this.pageIndex = 0;
     this.getBatches();
   }
 

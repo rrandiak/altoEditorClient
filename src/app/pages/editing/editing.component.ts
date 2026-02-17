@@ -240,10 +240,7 @@ export class EditingComponent implements OnInit {
   }
 
   openGeneratePriorityDialog(engine: UserInfo): void {
-    const data: GeneratePriorityDialogData = {
-      engine,
-      priorities: this.priorities,
-    };
+    const data: GeneratePriorityDialogData = { engine };
     const ref = this.dialog.open(GeneratePriorityDialogComponent, {
       data,
       width: '320px',

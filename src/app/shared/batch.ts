@@ -23,7 +23,7 @@ export enum BatchType {
   RETRIEVE_HIERARCHY = 'RETRIEVE_HIERARCHY',
 }
 
-export interface BatchSearchRequest {
+export interface BatchSearchFilters {
   pid?: string;
   state?: BatchState | string;
   substate?: BatchSubstate | string;

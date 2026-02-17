@@ -87,8 +87,10 @@
     "HIGH": "Vysoká"
   },
   "type": {
-    "MULTIPLE": "Mnohonásobný",
-    "SINGLE": "Jediný"
+    "GENERATE_SINGLE": "Generování pro jednu stránku",
+    "GENERATE_FOR_HIERARCHY": "Generování pro hierarchii",
+    "RETRIEVE_HIERARCHY": "Načtení hierarchie",
+    "REINDEX": "Reindexace"
   },
   "paginator": {
     "desc": {

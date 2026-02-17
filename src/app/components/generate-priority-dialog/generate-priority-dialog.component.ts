@@ -15,7 +15,6 @@ import { BatchPriority } from 'src/app/shared/batch';
 
 export interface GeneratePriorityDialogData {
   engine: UserInfo;
-  priorities: string[];
 }
 
 export interface GeneratePriorityDialogResult {
@@ -38,6 +37,7 @@ export interface GeneratePriorityDialogResult {
   styleUrls: ['./generate-priority-dialog.component.scss'],
 })
 export class GeneratePriorityDialogComponent {
+  priorities: BatchPriority[] = Object.values(BatchPriority);
   selectedPriority: BatchPriority;
 
   constructor(

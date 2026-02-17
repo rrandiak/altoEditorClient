@@ -3,7 +3,7 @@
   <mat-form-field appearance="outline" class="app-w-100">
     <mat-label>{{ 'desc.priority' | translate }}</mat-label>
     <mat-select [(ngModel)]="selectedPriority">
-      <mat-option *ngFor="let p of data.priorities" [value]="p">
+      <mat-option *ngFor="let p of priorities" [value]="p">
         {{ 'priority.' + p | translate }}
       </mat-option>
     </mat-select>

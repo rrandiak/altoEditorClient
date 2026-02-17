@@ -7,7 +7,7 @@ import { catchError, map, tap } from 'rxjs/operators';
 import { TranslateService } from '@ngx-translate/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { AppConfiguration } from './app-configuration';
-import { Batch, BatchPriority, BatchSearchRequest } from './shared/batch';
+import { Batch, BatchPriority, BatchSearchFilters } from './shared/batch';
 import { SearchResults } from './shared/search-results';
 import { AppState } from './shared/app.state';
 import {
@@ -168,7 +168,7 @@ export class AppService {
   }
 
   searchBatches(
-    request: BatchSearchRequest,
+    filters: BatchSearchFilters,
     params?: {
       offset?: number;
       limit?: number;
@@ -177,25 +177,25 @@ export class AppService {
     },
   ): Observable<Pageable<Batch>> {
     let httpParams = new HttpParams();
-    if (request.pid != null) httpParams = httpParams.set('pid', request.pid);
-    if (request.state != null)
-      httpParams = httpParams.set('state', String(request.state));
-    if (request.substate != null)
-      httpParams = httpParams.set('substate', String(request.substate));
-    if (request.createdAfter != null)
-      httpParams = httpParams.set('createdAfter', request.createdAfter);
-    if (request.createdBefore != null)
-      httpParams = httpParams.set('createdBefore', request.createdBefore);
-    if (request.updatedAfter != null)
-      httpParams = httpParams.set('updatedAfter', request.updatedAfter);
-    if (request.updatedBefore != null)
-      httpParams = httpParams.set('updatedBefore', request.updatedBefore);
-    if (request.priority != null)
-      httpParams = httpParams.set('priority', String(request.priority));
-    if (request.type != null)
-      httpParams = httpParams.set('type', String(request.type));
-    if (request.instance != null)
-      httpParams = httpParams.set('instance', request.instance);
+    if (filters.pid != null) httpParams = httpParams.set('pid', filters.pid);
+    if (filters.state != null)
+      httpParams = httpParams.set('state', String(filters.state));
+    if (filters.substate != null)
+      httpParams = httpParams.set('substate', String(filters.substate));
+    if (filters.createdAfter != null)
+      httpParams = httpParams.set('createdAfter', filters.createdAfter);
+    if (filters.createdBefore != null)
+      httpParams = httpParams.set('createdBefore', filters.createdBefore);
+    if (filters.updatedAfter != null)
+      httpParams = httpParams.set('updatedAfter', filters.updatedAfter);
+    if (filters.updatedBefore != null)
+      httpParams = httpParams.set('updatedBefore', filters.updatedBefore);
+    if (filters.priority != null)
+      httpParams = httpParams.set('priority', String(filters.priority));
+    if (filters.type != null)
+      httpParams = httpParams.set('type', String(filters.type));
+    if (filters.instance != null)
+      httpParams = httpParams.set('instance', filters.instance);
     if (params?.offset != null)
       httpParams = httpParams.set('offset', String(params.offset));
     if (params?.limit != null)

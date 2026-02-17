@@ -1,4 +1,4 @@
-import { Component, ViewChild } from '@angular/core';
+import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 import { AngularSplitModule } from 'angular-split';
@@ -9,7 +9,6 @@ import { AppService } from 'src/app/app.service';
 import { AppConfiguration } from 'src/app/app-configuration';
 import { MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { Version } from 'src/app/shared/version';
 import { AppState } from 'src/app/shared/app.state';
 import { HighlightModule } from 'ngx-highlightjs';
 import { js2xml, xml2js } from 'xml-js';
@@ -20,11 +19,7 @@ import { FormsModule } from '@angular/forms';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { Storage } from 'src/app/shared/constants';
 import { SearchResults } from 'src/app/shared/search-results';
-import {
-  AltoVersion,
-  AltoVersionContent,
-  AltoVersionState,
-} from 'src/app/shared/alto-version';
+import { AltoVersion, AltoVersionContent } from 'src/app/shared/alto-version';
 
 @Component({
   selector: 'app-revision-detail',

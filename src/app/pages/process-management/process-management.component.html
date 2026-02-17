@@ -24,10 +24,9 @@
         <ng-container matColumnDef="pid-filter">
           <th mat-header-cell *matHeaderCellDef>
             <mat-form-field >
-              <input matInput type="text" id="pidFilter" [(ngModel)]="pidFilter" (change)="filter('pid', pidFilter)" [placeholder]="'desc.filterByPid' | translate">
-              <button mat-icon-button matIconSuffix color="warn" *ngIf="pidFilter" (click)="filter('pid', ''); pidFilter = ''"><mat-icon>clear</mat-icon></button>
+              <input matInput type="text" id="pidFilter" [(ngModel)]="filters.pid" (change)="filter('pid', filters.pid)" [placeholder]="'desc.filterByPid' | translate">
+              <button mat-icon-button matIconSuffix color="warn" *ngIf="filters.pid" (click)="filter('pid', '')"><mat-icon>clear</mat-icon></button>
             </mat-form-field>
-            <!-- <input type="text" id="pidFilter" [(ngModel)]="pidFilter" (change)="filter('pid', pidFilter)" /> -->
            </th>
         </ng-container>
         <ng-container matColumnDef="pid">
@@ -38,40 +37,40 @@
         <ng-container matColumnDef="createdAt-filter">
           <th mat-header-cell *matHeaderCellDef>
             <mat-form-field>
-              <input matInput [matDatepicker]="picker" [formControl]="createDate" (dateChange)="dateChanged($event, createDate, 'createdAt')" [placeholder]="'desc.filterByCreateDate' | translate">
-              <button mat-icon-button matIconSuffix color="warn" *ngIf="createDate.value" (click)="createDate.setValue(null);this.filter('createdAt', '')"><mat-icon>clear</mat-icon></button>
-              <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
-              <mat-datepicker #picker></mat-datepicker>
+              <input matInput [matDatepicker]="pickerCreated" [formControl]="dateFormControls.createdAfter" (dateChange)="filterDate('createdAfter', dateFormControls.createdAfter, false)" [placeholder]="'desc.filterByCreateDate' | translate">
+              <button mat-icon-button matIconSuffix color="warn" *ngIf="dateFormControls.createdAfter.value" (click)="filterDate('createdAfter', null, false)"><mat-icon>clear</mat-icon></button>
+              <mat-datepicker-toggle matIconSuffix [for]="pickerCreated"></mat-datepicker-toggle>
+              <mat-datepicker #pickerCreated></mat-datepicker>
             </mat-form-field>
           </th>
         </ng-container>
         <ng-container matColumnDef="createdAt">
-          <th mat-header-cell *matHeaderCellDef mat-sort-header>{{ 'desc.createDate' | translate }}</th>
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>{{ 'desc.createdAt' | translate }}</th>
           <td mat-cell *matCellDef="let element">{{ element.createdAt | date : 'dd.MM.yyyy HH:mm:ss' }}</td>
         </ng-container>
   
         <ng-container matColumnDef="updatedAt-filter">
           <th mat-header-cell *matHeaderCellDef>
             <mat-form-field>
-              <input matInput [matDatepicker]="picker2" [formControl]="updateDate" (dateChange)="dateChanged($event, updateDate, 'updatedAt')" [placeholder]="'desc.filterByUpdateDate' | translate">
-              <button mat-icon-button matIconSuffix color="warn" *ngIf="updateDate.value" (click)="updateDate.setValue(null);this.filter('updatedAt', '')"><mat-icon>clear</mat-icon></button>
-              <mat-datepicker-toggle matIconSuffix [for]="picker2"></mat-datepicker-toggle>
-              <mat-datepicker #picker2></mat-datepicker>
+              <input matInput [matDatepicker]="pickerUpdated" [formControl]="dateFormControls.updatedAfter" (dateChange)="filterDate('updatedAfter', dateFormControls.updatedAfter, false)" [placeholder]="'desc.filterByUpdateDate' | translate">
+              <button mat-icon-button matIconSuffix color="warn" *ngIf="dateFormControls.updatedAfter.value" (click)="filterDate('updatedAfter', null, false)"><mat-icon>clear</mat-icon></button>
+              <mat-datepicker-toggle matIconSuffix [for]="pickerUpdated"></mat-datepicker-toggle>
+              <mat-datepicker #pickerUpdated></mat-datepicker>
             </mat-form-field>
           </th>
         </ng-container>
         <ng-container matColumnDef="updatedAt">
-          <th mat-header-cell *matHeaderCellDef mat-sort-header>{{ 'desc.updateDate' | translate }}</th>
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>{{ 'desc.updatedAt' | translate }}</th>
           <td mat-cell *matCellDef="let element">{{ element.updatedAt | date : 'dd.MM.yyyy HH:mm:ss' }}</td>
         </ng-container>
   
         <ng-container matColumnDef="state-filter">
           <th mat-header-cell *matHeaderCellDef>
             <mat-form-field>
-              <mat-select [(ngModel)]="stateFilter" (ngModelChange)="filter('state', stateFilter)" panelClass="app-panel-table-header" [placeholder]="'desc.filterByStatus' | translate">
+              <mat-select [(ngModel)]="filters.state" (ngModelChange)="filter('state', filters.state)" panelClass="app-panel-table-header" [placeholder]="'desc.filterByStatus' | translate">
                 <mat-option *ngFor="let s of states" [value]="s">{{ 'state.' + s | translate }}</mat-option>
               </mat-select>
-              <button mat-icon-button matIconSuffix color="warn" *ngIf="stateFilter" (click)="filter('state', ''); stateFilter = ''; $event.stopPropagation();"><mat-icon>clear</mat-icon></button>
+              <button mat-icon-button matIconSuffix color="warn" *ngIf="filters.state" (click)="filter('state', ''); $event.stopPropagation()"><mat-icon>clear</mat-icon></button>
             </mat-form-field>
           </th>
         </ng-container>
@@ -95,10 +94,10 @@
         <ng-container matColumnDef="priority-filter">
           <th mat-header-cell *matHeaderCellDef>
             <mat-form-field>
-              <mat-select [(ngModel)]="priorityFilter" (ngModelChange)="filter('priority', priorityFilter)" panelClass="app-panel-table-header" [placeholder]="'desc.filterByPriority' | translate">
-                <mat-option *ngFor="let s of priorities" [value]="s">{{ 'priority.' + s | translate }}</mat-option>
+              <mat-select [(ngModel)]="filters.priority" (ngModelChange)="filter('priority', filters.priority)" panelClass="app-panel-table-header" [placeholder]="'desc.filterByPriority' | translate">
+                <mat-option *ngFor="let p of priorities" [value]="p">{{ 'priority.' + p | translate }}</mat-option>
               </mat-select>
-              <button mat-icon-button matIconSuffix color="warn" *ngIf="priorityFilter" (click)="filter('priority', ''); priorityFilter = ''; $event.stopPropagation();"><mat-icon>clear</mat-icon></button>
+              <button mat-icon-button matIconSuffix color="warn" *ngIf="filters.priority" (click)="filter('priority', ''); $event.stopPropagation()"><mat-icon>clear</mat-icon></button>
             </mat-form-field>
           </th>
         </ng-container>
