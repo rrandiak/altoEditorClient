@@ -93,12 +93,18 @@ $app-icon-item-border-color: $app-grid-item-border-color;
 $app-badge-height: 18px !default;
 $app-badge-model-bg: #607D8B;
 
+// location badges (Kramerius, Local, Not found)
+$app-badge-kramerius-bg: #1976d2 !default;
+$app-badge-local-bg: #388e3c !default;
+$app-badge-not-found-bg: #c62828 !default;
+$app-badge-both-bg: #6a1b9a !default;
+
 // footer
 $app-footer-bg-color: $app-color-darknes;
 $app-footer-color: $app-gray-5;
 
 // mat override
-$app-mat-table-row-height: 28px !default;
+$app-mat-table-row-height: 40px !default;
 $app-button-height: 32px !default;
 $app-button-border-color: $app-gray-4;
 $app-button-bg: $app-default-bg;

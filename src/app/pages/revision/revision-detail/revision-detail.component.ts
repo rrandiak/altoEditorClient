@@ -4,6 +4,8 @@ import { TranslateModule } from '@ngx-translate/core';
 import { AngularSplitModule } from 'angular-split';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
+import { MatMenuModule } from '@angular/material/menu';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { AppService } from 'src/app/app.service';
 import { AppConfiguration } from 'src/app/app-configuration';
@@ -20,6 +22,13 @@ import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { Storage } from 'src/app/shared/constants';
 import { SearchResults } from 'src/app/shared/search-results';
 import { AltoVersion, AltoVersionContent } from 'src/app/shared/alto-version';
+import { RevisionListStateService } from 'src/app/shared/revision-list-state.service';
+import {
+  PlanProcessDialogComponent,
+  PlanProcessDialogData,
+} from 'src/app/components/plan-process-dialog/plan-process-dialog.component';
+import { UserInfo } from 'src/app/shared/user-info';
+import { BatchPriority } from 'src/app/shared/batch';
 
 @Component({
   selector: 'app-revision-detail',
@@ -29,6 +38,8 @@ import { AltoVersion, AltoVersionContent } from 'src/app/shared/alto-version';
     FormsModule,
     AngularSplitModule,
     MatButtonToggleModule,
+    MatMenuModule,
+    MatDialogModule,
     TranslateModule,
     RouterModule,
     OcrEditorComponent,
@@ -70,9 +81,11 @@ export class RevisionDetailComponent {
   constructor(
     private route: ActivatedRoute,
     private router: Router,
+    private dialog: MatDialog,
     private config: AppConfiguration,
     private service: AppService,
     public state: AppState,
+    private revisionListState: RevisionListStateService,
   ) {}
 
   ngOnInit() {
@@ -92,9 +105,21 @@ export class RevisionDetailComponent {
 
     this.route.params.subscribe((params) => {
       this.pid = params['pid'];
-      this.version = params['version'];
+      const v = params['version'];
+      const ver = v != null ? parseInt(v, 10) : NaN;
+      this.version = !isNaN(ver) ? ver : null;
+      const items = this.revisionListState.items;
+      if (items.length && this.pid) {
+        const idx =
+          this.version != null
+            ? items.findIndex(
+                (i) => i.pid === this.pid && i.version === this.version,
+              )
+            : items.findIndex((i) => i.pid === this.pid);
+        if (idx >= 0) this.revisionListState.currentIndex = idx;
+      }
       this.getVersions();
-      if (this.version) {
+      if (this.version != null) {
         this.getSelectedVersion();
       }
       this.getActiveVersion();
@@ -122,7 +147,11 @@ export class RevisionDetailComponent {
       .subscribe((res: SearchResults<AltoVersion>) => {
         this.versions = res.items ?? [];
         if (this.versions.length && this.version == null) {
-          this.version = this.versions[this.versions.length - 1].version;
+          const latest = this.versions[this.versions.length - 1].version;
+          this.version = latest;
+          this.router.navigate(['/revision', this.pid, latest], {
+            replaceUrl: true,
+          });
           this.getSelectedVersion();
         }
       });
@@ -160,6 +189,9 @@ export class RevisionDetailComponent {
 
   selectVersion(version: number) {
     this.version = version;
+    this.router.navigate(['/revision', this.pid, version], {
+      replaceUrl: true,
+    });
     this.getSelectedVersion();
   }
 
@@ -173,7 +205,7 @@ export class RevisionDetailComponent {
       },
       error: (err) =>
         this.service.showSnackBar(
-          err?.error?.errors?.[0] ?? 'desc.error',
+          err?.error?.errors?.[0] ?? 'message.error',
           true,
         ),
     });
@@ -186,10 +218,11 @@ export class RevisionDetailComponent {
         this.service.showSnackBar('desc.rejectSuccess');
         this.getVersions();
         this.getActiveVersion();
+        this.getSelectedVersion();
       },
       error: (err) =>
         this.service.showSnackBar(
-          err?.error?.errors?.[0] ?? 'desc.error',
+          err?.error?.errors?.[0] ?? 'message.error',
           true,
         ),
     });
@@ -202,13 +235,53 @@ export class RevisionDetailComponent {
         this.service.showSnackBar('desc.archiveSuccess');
         this.getVersions();
         this.getActiveVersion();
+        this.getSelectedVersion();
       },
       error: (err) =>
         this.service.showSnackBar(
-          err?.error?.errors?.[0] ?? 'desc.error',
+          err?.error?.errors?.[0] ?? 'message.error',
           true,
         ),
     });
+  }
+
+  openGeneratePriorityDialog(engine: UserInfo): void {
+    this.dialog
+      .open(PlanProcessDialogComponent, {
+        data: {
+          title: 'actionTitle.generateSinglePageAlto',
+          titleParams: { engine: engine.username },
+        } as PlanProcessDialogData,
+        width: '320px',
+      })
+      .afterClosed()
+      .subscribe((result) => {
+        if (result?.priority) {
+          this.generateWithEngine(engine, result.priority);
+        }
+      });
+  }
+
+  generateWithEngine(engine: UserInfo, priority: BatchPriority): void {
+    if (!this.pid) return;
+    this.service
+      .generateAlto(this.pid, engine.username, priority, this.config.instance)
+      .subscribe({
+        next: (res: any) => {
+          if (res?.errors?.length) {
+            this.service.showSnackBar(res.errors[0], true);
+          } else {
+            this.service.showSnackBar(
+              res?.content ? res.content : 'desc.PEROExists',
+            );
+          }
+        },
+        error: (err) =>
+          this.service.showSnackBar(
+            err?.error?.message || 'message.error',
+            true,
+          ),
+      });
   }
 
   /** Save current edits of the selected version (same as editing page). */
@@ -226,7 +299,7 @@ export class RevisionDetailComponent {
       },
       error: (err) =>
         this.service.showSnackBar(
-          err?.error?.errors?.[0] ?? 'desc.error',
+          err?.error?.errors?.[0] ?? 'message.error',
           true,
         ),
     });
@@ -271,5 +344,89 @@ export class RevisionDetailComponent {
 
   zoomImgReset() {
     this.imgW = 100;
+  }
+
+  get hasListContext(): boolean {
+    const items = this.revisionListState.items;
+    return items.length > 0 && this.revisionListState.searchRequest != null;
+  }
+
+  get canGoPrev(): boolean {
+    if (!this.hasListContext) return false;
+    const items = this.revisionListState.items;
+    const idx = this.revisionListState.currentIndex;
+    const pageIdx = this.revisionListState.pageIndex;
+    return idx > 0 || (idx === 0 && pageIdx > 0);
+  }
+
+  get canGoNext(): boolean {
+    if (!this.hasListContext) return false;
+    const items = this.revisionListState.items;
+    const idx = this.revisionListState.currentIndex;
+    const pageIdx = this.revisionListState.pageIndex;
+    const pageSize = this.revisionListState.pageSize;
+    const total = this.revisionListState.totalRows;
+    return (
+      idx < items.length - 1 ||
+      (idx === items.length - 1 && (pageIdx + 1) * pageSize < total)
+    );
+  }
+
+  goToPrev(): void {
+    if (!this.canGoPrev) return;
+    const items = this.revisionListState.items;
+    const idx = this.revisionListState.currentIndex;
+    if (idx > 0) {
+      const prev = items[idx - 1];
+      this.revisionListState.currentIndex = idx - 1;
+      this.router.navigate(['/revision', prev.pid, prev.version]);
+      return;
+    }
+    const req = this.revisionListState.searchRequest!;
+    const pageSize = req.limit ?? 25;
+    const newOffset = Math.max(
+      0,
+      (this.revisionListState.pageIndex - 1) * pageSize,
+    );
+    const prevReq = { ...req, offset: newOffset, limit: pageSize };
+    this.service.searchAltoVersions(prevReq).subscribe((res) => {
+      const prevItems = res.items ?? [];
+      if (prevItems.length === 0) return;
+      const last = prevItems[prevItems.length - 1];
+      this.revisionListState.items = prevItems;
+      this.revisionListState.searchRequest = prevReq;
+      this.revisionListState.currentIndex = prevItems.length - 1;
+      this.router.navigate(['/revision', last.pid, last.version]);
+    });
+  }
+
+  goToNext(): void {
+    if (!this.canGoNext) return;
+    const items = this.revisionListState.items;
+    const idx = this.revisionListState.currentIndex;
+    if (idx < items.length - 1) {
+      const next = items[idx + 1];
+      this.revisionListState.currentIndex = idx + 1;
+      this.router.navigate(['/revision', next.pid, next.version]);
+      return;
+    }
+    const req = this.revisionListState.searchRequest!;
+    const pageSize = req.limit ?? 25;
+    const newOffset = (this.revisionListState.pageIndex + 1) * pageSize;
+    const nextReq = { ...req, offset: newOffset, limit: pageSize };
+    this.service.searchAltoVersions(nextReq).subscribe((res) => {
+      const nextItems = res.items ?? [];
+      if (nextItems.length === 0) return;
+      const first = nextItems[0];
+      this.revisionListState.items = nextItems;
+      this.revisionListState.searchRequest = nextReq;
+      this.revisionListState.currentIndex = 0;
+      this.router.navigate(['/revision', first.pid, first.version]);
+    });
+  }
+
+  backToResults(): void {
+    const params = this.revisionListState.buildResultsQueryParams();
+    this.router.navigate(['/revision'], { queryParams: params });
   }
 }

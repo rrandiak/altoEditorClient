@@ -1,0 +1,25 @@
+.app-home-title {
+  margin-bottom: 1.5rem;
+  font-size: 1.5rem;
+}
+
+.app-home-cards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.app-home-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 140px;
+  padding: 1.5rem 1rem !important;
+
+  mat-icon {
+    font-size: 2rem;
+    width: 2rem;
+    height: 2rem;
+  }
+}

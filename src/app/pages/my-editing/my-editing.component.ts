@@ -4,7 +4,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { Router, RouterModule } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { AppConfiguration } from 'src/app/app-configuration';
 import { AppService } from 'src/app/app.service';
@@ -25,9 +25,10 @@ import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
 import { MatInputModule } from '@angular/material/input';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import {
   AltoVersion,
-  AltoVersionSearchRequest,
+  AltoVersionSearchRelatedRequest,
   AltoVersionState,
 } from 'src/app/shared/alto-version';
 
@@ -55,6 +56,7 @@ import {
     MatDatepickerModule,
     MatNativeDateModule,
     MatInputModule,
+    MatProgressSpinnerModule,
   ],
   templateUrl: './my-editing.component.html',
   styleUrls: ['./my-editing.component.scss'],
@@ -71,6 +73,7 @@ export class MyEditingComponent {
   filterColumns: string[] = [];
 
   versions: AltoVersion[] = [];
+  loading = true;
   sortBy = 'updatedAt';
   orderSort: 'asc' | 'desc' = 'desc';
   totalRows = 0;
@@ -98,6 +101,7 @@ export class MyEditingComponent {
   constructor(
     private _adapter: DateAdapter<unknown>,
     @Inject(MAT_DATE_LOCALE) private _locale: string,
+    private route: ActivatedRoute,
     private router: Router,
     private config: AppConfiguration,
     private service: AppService,
@@ -109,21 +113,27 @@ export class MyEditingComponent {
     this.displayedColumns.forEach((c) => {
       this.filterColumns.push(c + '-filter');
     });
-    this.search();
+    this.route.queryParamMap.subscribe((params) => {
+      const pid = params.get('pid');
+      if (pid?.trim()) {
+        this.router.navigate(['/document-hierarchy'], {
+          queryParams: { pid: pid.trim() },
+        });
+        return;
+      }
+      this.search();
+    });
   }
 
-  buildSearchRequest(): AltoVersionSearchRequest {
+  buildSearchRequest(): AltoVersionSearchRelatedRequest {
     const offset = this.pageIndex * this.pageSize;
-    const request: AltoVersionSearchRequest = {
+    const request: AltoVersionSearchRelatedRequest = {
       // instance: this.config.instance,
       offset,
       limit: this.pageSize,
-      orderBy: this.sortBy,
-      orderSort: this.orderSort,
+      sortBy: this.sortBy,
+      sortOrder: this.orderSort === 'asc' ? 'ASC' : 'DESC',
     };
-    if (this.state.currentUser?.username) {
-      request.users = [this.state.currentUser.username];
-    }
     if (this.titleFilter?.trim()) {
       request.title = this.titleFilter.trim();
     }
@@ -147,9 +157,20 @@ export class MyEditingComponent {
 
   search(): void {
     const request = this.buildSearchRequest();
-    this.service.searchRelatedAltoVersions(request).subscribe((res) => {
-      this.versions = res.items ?? [];
-      this.totalRows = res.total ?? 0;
+    if (request.targetPid?.trim()) {
+      this.router.navigate(['/document-hierarchy'], {
+        queryParams: { pid: request.targetPid.trim() },
+      });
+      return;
+    }
+    this.loading = true;
+    this.service.searchRelatedAltoVersions(request).subscribe({
+      next: (res) => {
+        this.versions = res.items ?? [];
+        this.totalRows = res.total ?? 0;
+        this.loading = false;
+      },
+      error: () => (this.loading = false),
     });
   }
 

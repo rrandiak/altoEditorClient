@@ -1,17 +1,17 @@
-<h2 mat-dialog-title>{{ 'desc.generateWith' | translate }}: {{ data.engine.username }}</h2>
+<h2 mat-dialog-title>{{ data.title | translate : (data.titleParams || {}) }}</h2>
 <mat-dialog-content class="app-dialog-content">
   <mat-form-field appearance="outline" class="app-w-100">
-    <mat-label>{{ 'desc.priority' | translate }}</mat-label>
+    <mat-label>{{ 'desc.withPriority' | translate }}</mat-label>
     <mat-select [(ngModel)]="selectedPriority">
       <mat-option *ngFor="let p of priorities" [value]="p">
-        {{ 'priority.' + p | translate }}
+        {{ 'processPriority.' + p | translate }}
       </mat-option>
     </mat-select>
   </mat-form-field>
 </mat-dialog-content>
 <mat-dialog-actions align="end">
   <button mat-button (click)="onCancel()">{{ 'button.cancel' | translate }}</button>
-  <button mat-flat-button color="primary" (click)="onGenerate()" [disabled]="!selectedPriority">
-    {{ 'button.generate' | translate }}
+  <button mat-flat-button color="primary" (click)="onConfirm()" [disabled]="!selectedPriority">
+    {{ 'button.run' | translate }}
   </button>
 </mat-dialog-actions>

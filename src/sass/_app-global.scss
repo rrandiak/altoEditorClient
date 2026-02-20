@@ -1,5 +1,7 @@
 // --- GLOBAL ---
 
+@use '@angular/material' as mat;
+
 @include setGap();
 
 a {
@@ -144,6 +146,11 @@ ul {
 
 .app-text-lowercase {
   text-transform: lowercase;
+}
+
+.app-pid,
+.mat-column-pid {
+  font-family: monospace;
 }
 
 .app-va-middle {
@@ -441,6 +448,223 @@ as-split {
 
   &.app-view-border-top {
     border-top: 1px solid $app-toolbar-border-color;
+  }
+
+  .app-toolbar-start {
+    display: flex;
+    align-items: center;
+    gap: 10px !important;
+  }
+
+  .app-toolbar-group {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+
+    &:not(:first-child) {
+      margin-left: 12px;
+      padding-left: 12px;
+      border-left: 1px solid $app-toolbar-border-color;
+    }
+  }
+
+  .app-panel-mode-toggle {
+    @include mat.button-toggle-density(-4);
+
+    mat-button-toggle {
+      width: 45px;
+    }
+  }
+}
+
+// breadcrumb / revision toolbar
+.app-breadcrumbsbar-split {
+  justify-content: space-between;
+}
+
+.app-breadcrumb-nav {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.app-breadcrumb-actions {
+  flex-shrink: 0;
+}
+
+.app-breadcrumb-divider {
+  width: 1px;
+  height: 24px;
+  background-color: $app-default-border-color;
+  margin: 0 12px;
+  flex-shrink: 0;
+}
+
+.app-nav-buttons {
+  gap: 0.25rem;
+  align-items: center;
+
+  .mat-mdc-icon-button,
+  .mat-icon-button {
+    width: 40px !important;
+    height: 40px !important;
+    min-width: 40px;
+    min-height: 40px;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+
+    .mat-icon {
+      margin: 0;
+    }
+  }
+}
+
+.app-active {
+  font-weight: bold;
+}
+
+// tree / document hierarchy layout
+.app-expand-placeholder {
+  flex: 0 0 32px;
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
+}
+
+.app-tree-row,
+.app-location-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: 0.75rem;
+}
+
+.app-tree-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 32px;
+  width: 32px;
+  min-width: 32px;
+  overflow: hidden;
+
+  .mat-mdc-icon-button,
+  .mat-icon-button {
+    width: 32px !important;
+    min-width: 32px !important;
+    height: 32px !important;
+    padding: 0 !important;
+    flex-shrink: 0;
+
+    .mat-mdc-button-touch-target {
+      width: 32px !important;
+      height: 32px !important;
+    }
+  }
+}
+
+.app-tree-title {
+  flex: 0 1 auto;
+  min-width: 0;
+}
+
+.app-location-cell {
+  vertical-align: middle;
+
+  .mat-mdc-icon-button,
+  .mat-icon-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    .mat-icon {
+      vertical-align: middle;
+    }
+  }
+}
+
+.app-location-badges {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.25rem;
+  flex: 0 1 auto;
+  min-width: 0;
+}
+
+.app-inline-spinner {
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.app-dual-cell {
+  vertical-align: middle;
+}
+
+.app-labeled {
+  padding: 0.2rem 0;
+  min-height: 1.4rem;
+
+  .app-badge {
+    margin-right: 0.5rem;
+  }
+}
+
+// location badges
+.app-badge-kramerius {
+  background: $app-badge-kramerius-bg;
+  color: $app-color-lightnes;
+  padding: 2px 6px;
+  border-radius: $app-border-radius;
+  font-size: 0.75rem;
+}
+
+.app-badge-local {
+  background: $app-badge-local-bg;
+  color: $app-color-lightnes;
+  padding: 2px 6px;
+  border-radius: $app-border-radius;
+  font-size: 0.75rem;
+}
+
+.app-badge-not-found {
+  background: $app-badge-not-found-bg;
+  color: $app-color-lightnes;
+  padding: 2px 6px;
+  border-radius: $app-border-radius;
+  font-size: 0.75rem;
+}
+
+.app-badge-both {
+  background: $app-badge-both-bg;
+  color: $app-color-lightnes;
+  padding: 2px 6px;
+  border-radius: $app-border-radius;
+  font-size: 0.75rem;
+}
+
+.app-actions-cell .app-actions-inline {
+  display: inline-flex;
+  flex-direction: row;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: 0;
+}
+
+.app-title-cell .mat-mdc-icon-button,
+.app-title-cell .mat-icon-button,
+.app-actions-cell .mat-mdc-icon-button,
+.app-actions-cell .mat-icon-button,
+.app-actions-cell a[mat-icon-button] {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  .mat-icon {
+    vertical-align: middle;
   }
 }
 

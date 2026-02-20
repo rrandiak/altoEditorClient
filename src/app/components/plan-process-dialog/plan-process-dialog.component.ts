@@ -10,19 +10,21 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
 import { TranslateModule } from '@ngx-translate/core';
-import { UserInfo } from 'src/app/shared/user-info';
 import { BatchPriority } from 'src/app/shared/batch';
 
-export interface GeneratePriorityDialogData {
-  engine: UserInfo;
+export interface PlanProcessDialogData {
+  /** Dialog title - translation key (e.g. 'maintenance.reindex') or interpolated key with params */
+  title: string;
+  /** Optional params for title interpolation, e.g. { engine: 'pero' } for 'desc.generateWith' */
+  titleParams?: Record<string, string>;
 }
 
-export interface GeneratePriorityDialogResult {
-  priority: string;
+export interface PlanProcessDialogResult {
+  priority: BatchPriority;
 }
 
 @Component({
-  selector: 'app-generate-priority-dialog',
+  selector: 'app-plan-process-dialog',
   standalone: true,
   imports: [
     CommonModule,
@@ -33,19 +35,19 @@ export interface GeneratePriorityDialogResult {
     MatSelectModule,
     TranslateModule,
   ],
-  templateUrl: './generate-priority-dialog.component.html',
-  styleUrls: ['./generate-priority-dialog.component.scss'],
+  templateUrl: './plan-process-dialog.component.html',
+  styleUrls: ['./plan-process-dialog.component.scss'],
 })
-export class GeneratePriorityDialogComponent {
+export class PlanProcessDialogComponent {
   priorities: BatchPriority[] = Object.values(BatchPriority);
   selectedPriority: BatchPriority;
 
   constructor(
     public dialogRef: MatDialogRef<
-      GeneratePriorityDialogComponent,
-      GeneratePriorityDialogResult | undefined
+      PlanProcessDialogComponent,
+      PlanProcessDialogResult | undefined
     >,
-    @Inject(MAT_DIALOG_DATA) public data: GeneratePriorityDialogData,
+    @Inject(MAT_DIALOG_DATA) public data: PlanProcessDialogData,
   ) {
     this.selectedPriority = BatchPriority.MEDIUM;
   }
@@ -54,7 +56,7 @@ export class GeneratePriorityDialogComponent {
     this.dialogRef.close();
   }
 
-  onGenerate(): void {
+  onConfirm(): void {
     if (this.selectedPriority) {
       this.dialogRef.close({ priority: this.selectedPriority });
     }

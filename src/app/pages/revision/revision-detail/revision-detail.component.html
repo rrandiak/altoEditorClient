@@ -1,13 +1,25 @@
 <div class="app-fxLayout-column app-fxFlexFill">
-  <div class="app-breadcrumbsbar app-fxLayout-row app-fxLayout-center-v">
-    <div class="app-breadcrumbs app-fxFlex app-fxLayout-row app-fxLayout-center-v">
-      <a routerLink="/"><mat-icon>home</mat-icon></a>
-      <span class="app-separator">/</span>
-      <a routerLink="/revision">{{ 'navbar.revision' | translate }}</a>
-      <span class="app-separator">/</span>
-      <span class="app-last">{{ pid }}</span>
+  <div class="app-breadcrumbsbar app-breadcrumbsbar-split app-fxLayout-row app-fxLayout-center-v">
+    <div class="app-breadcrumb-nav app-fxLayout app-row app-center-v">
+      <div class="app-breadcrumbs app-fxLayout-row app-fxLayout-center-v">
+        <a routerLink="/"><mat-icon>home</mat-icon></a>
+        <span class="app-separator">/</span>
+        <a routerLink="/revision">{{ 'navbar.revision' | translate }}</a>
+        <span class="app-separator">/</span>
+        <span class="app-last app-pid">{{ pid }}</span>
+      </div>
+      <ng-container *ngIf="hasListContext">
+        <span class="app-breadcrumb-divider"></span>
+        <div class="app-nav-buttons app-fxLayout app-row app-center-v">
+          <button mat-icon-button (click)="goToPrev()" [disabled]="!canGoPrev" [matTooltip]="'button.prev' | translate" type="button"><mat-icon>chevron_left</mat-icon></button>
+          <button mat-icon-button (click)="goToNext()" [disabled]="!canGoNext" [matTooltip]="'button.next' | translate" type="button"><mat-icon>chevron_right</mat-icon></button>
+          <button mat-stroked-button (click)="backToResults()" [matTooltip]="'button.backToResults' | translate">
+            <mat-icon>arrow_back</mat-icon> {{ 'button.backToResults' | translate }}
+          </button>
+        </div>
+      </ng-container>
     </div>
-    <div class="app-h-100 app-fxLayout app-row app-center-v">
+    <div class="app-breadcrumb-actions app-fxLayout app-row app-center-v" style="gap: 0.5rem;">
       <button mat-button (click)="acceptVersion()" [disabled]="!selectedVersion" [matTooltip]="'button.accept' | translate">{{ 'button.accept' | translate }}</button>
       <button mat-button (click)="rejectVersion()" [disabled]="!selectedVersion || selectedVersion.state !== 'PENDING'" [matTooltip]="'button.reject' | translate">{{ 'button.reject' | translate }}</button>
       <button mat-button (click)="archiveVersion()" [disabled]="!selectedVersion || selectedVersion.state !== 'PENDING'" [matTooltip]="'button.archive' | translate">{{ 'button.archive' | translate }}</button>
@@ -39,11 +51,11 @@
                   <ng-container matColumnDef="state">
                     <th mat-header-cell *matHeaderCellDef>{{ 'desc.state' | translate }}</th>
                     <td mat-cell *matCellDef="let element">
-                      <span class="app-badge" [ngClass]="'app-' + element.state">{{ 'state.' + element.state | translate }}</span>
+                      <span class="app-badge" [ngClass]="'app-' + element.state">{{ 'versionState.' + element.state | translate }}</span>
                     </td>
                   </ng-container>
                   <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
-                  <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="app-cursor-pointer" [class.app-active]="row.version === selectedVersion?.version" (click)="selectVersion(row.version)"></tr>
+                  <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="app-cursor-pointer" [class.app-selected]="row.version === selectedVersion?.version" [class.app-active]="row.version === selectedVersion?.version" (click)="selectVersion(row.version)"></tr>
                 </table>
               </div>
             </div>
@@ -103,6 +115,10 @@
                 </div>
                 <div class="app-toolbar-group">
                   <button mat-icon-button (click)="save()" [matTooltip]="'button.save' | translate"><mat-icon>save</mat-icon></button>
+                  <button mat-icon-button *ngIf="state.currentUser?.isCurator && state.engineUsers?.length" [matMenuTriggerFor]="engineMenu" [matTooltip]="'button.generate' | translate"><mat-icon>scanner</mat-icon></button>
+                  <mat-menu #engineMenu="matMenu">
+                    <button mat-menu-item *ngFor="let engine of state.engineUsers" (click)="openGeneratePriorityDialog(engine)">{{ engine.username }}</button>
+                  </mat-menu>
                 </div>
               </div>
               <div class="app-fxFlex app-oa-y">

@@ -1,0 +1,400 @@
+<div class="app-fxLayout-column app-fxFlexFill">
+  <div class="app-breadcrumbsbar app-fxLayout-row app-fxLayout-center-v">
+    <div class="app-breadcrumbs app-fxFlex app-fxLayout-row app-fxLayout-center-v">
+      <a routerLink="/"><mat-icon>home</mat-icon></a>
+      <span class="app-separator">/</span>
+      <span class="app-last">{{ 'navbar.documentHierarchy' | translate }}</span>
+    </div>
+  </div>
+
+  <div class="app-content-wrapper app-fxFlex app-oh app-oa-y">
+    <div class="app-p-2 app-h-100 app-border-wrapper">
+      <!-- Add/Check or Back to local + batch actions -->
+      <div class="app-mb-2 app-fxLayout-row app-fxLayout-center-v" style="gap: 0.5rem; flex-wrap: wrap;">
+        <button
+          *ngIf="!isPidSearchMode"
+          mat-stroked-button
+          (click)="togglePidInput()"
+          type="button"
+        >
+          <mat-icon>{{ showPidInput ? 'expand_less' : 'expand_more' }}</mat-icon>
+          {{ 'action.addOrCheckPids' | translate }}
+        </button>
+        <button
+          *ngIf="isPidSearchMode"
+          mat-stroked-button
+          (click)="backToLocal()"
+          type="button"
+        >
+          <mat-icon>arrow_back</mat-icon>
+          {{ 'action.backToLocalDocuments' | translate }}
+        </button>
+        <ng-container *ngIf="!isLoading && selectedCount > 0 && (generateEligibleCount > 0 || fetchEligibleCount > 0)">
+          <button
+            *ngIf="state.engineUsers?.length && generateEligibleCount > 0"
+            mat-stroked-button
+            [matMenuTriggerFor]="batchGenerateMenu"
+            [disabled]="batchProgress !== null"
+          >
+            <mat-icon>play_circle</mat-icon>
+            {{ 'action.generateAlto' | translate }} ({{ generateEligibleCount }})
+          </button>
+          <mat-menu #batchGenerateMenu="matMenu">
+            <button mat-menu-item *ngFor="let engine of state.engineUsers" (click)="openBatchGenerateDialogWithEngine(engine, $event)">
+              {{ engine.username }}
+            </button>
+          </mat-menu>
+          <button
+            *ngIf="fetchEligibleCount > 0"
+            mat-stroked-button
+            (click)="openBatchFetchDialog($event)"
+            [disabled]="batchProgress !== null"
+          >
+            <mat-icon>cloud_download</mat-icon>
+            {{ 'action.fetchFromKramerius' | translate }} ({{ fetchEligibleCount }})
+          </button>
+          <span *ngIf="batchProgress" class="app-ml-2" style="font-size: 0.9em; color: #666;">
+            {{ batchProgress.planned }} / {{ batchProgress.total }}
+          </span>
+        </ng-container>
+      </div>
+      <div *ngIf="showPidInput && !isPidSearchMode" class="app-mb-4 app-p-2 app-border-wrapper">
+        <mat-form-field class="app-w-100" appearance="outline">
+          <mat-label>{{ 'placeholder.pids' | translate }}</mat-label>
+          <textarea
+            matInput
+            [(ngModel)]="pidInputText"
+            rows="4"
+          ></textarea>
+        </mat-form-field>
+        <button
+          mat-raised-button
+          color="primary"
+          (click)="checkPids()"
+          [disabled]="loadingPids || !pids.length"
+        >
+          {{ 'button.check' | translate }}
+        </button>
+      </div>
+
+      <!-- Loading -->
+      <div *ngIf="isLoading" class="app-p-2">{{ 'placeholder.loading' | translate }}</div>
+
+      <!-- Local browse table -->
+      <ng-container *ngIf="!isLoading && !isPidSearchMode">
+        <table
+          mat-table
+          [dataSource]="localTableRows"
+          class="app-w-100 app-striped app-hover"
+          matSort
+          [matSortActive]="localSortBy"
+          [matSortDirection]="localOrderSort"
+          (matSortChange)="onLocalSortChange($event)"
+        >
+          <ng-container matColumnDef="select">
+            <th mat-header-cell *matHeaderCellDef>
+              <mat-checkbox
+                [checked]="isAllLocalSelected()"
+                [indeterminate]="selectedLocalCount > 0 && !isAllLocalSelected()"
+                (change)="toggleAllLocalSelection($event)"
+              ></mat-checkbox>
+            </th>
+            <td mat-cell *matCellDef="let doc" (click)="$event.stopPropagation()">
+              <mat-checkbox
+                *ngIf="isLocalTopLevel(doc)"
+                [checked]="isLocalRowSelected(doc)"
+                (change)="toggleLocalSelection(doc, $event)"
+              ></mat-checkbox>
+            </td>
+          </ng-container>
+          <ng-container matColumnDef="title">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>{{ 'desc.title' | translate }}</th>
+            <td mat-cell *matCellDef="let doc" class="app-title-cell">
+              <div class="app-tree-row" [style.padding-left.px]="doc.level * 24">
+                <span class="app-tree-toggle">
+                  <mat-spinner *ngIf="loadingChildrenPid === doc.pid" diameter="22" class="app-inline-spinner"></mat-spinner>
+                  <button
+                    *ngIf="loadingChildrenPid !== doc.pid && canExpandOrCollapse(doc)"
+                    mat-icon-button
+                    (click)="toggleLocalSubtree(doc, $event)"
+                    [matTooltip]="isExpanded(doc.pid) ? ('button.collapse' | translate) : ('button.expand' | translate)"
+                  >
+                    <mat-icon>{{ isExpanded(doc.pid) ? 'expand_more' : 'chevron_right' }}</mat-icon>
+                  </button>
+                  <span *ngIf="loadingChildrenPid !== doc.pid && !canExpandOrCollapse(doc)" class="app-expand-placeholder"></span>
+                </span>
+                <span class="app-tree-title" [class.app-pid]="!doc.title">{{ doc.title || doc.pid }}</span>
+              </div>
+            </td>
+          </ng-container>
+          <ng-container matColumnDef="pid">
+            <th mat-header-cell *matHeaderCellDef>{{ 'desc.pid' | translate }}</th>
+            <td mat-cell *matCellDef="let doc">{{ doc.pid }}</td>
+          </ng-container>
+          <ng-container matColumnDef="model">
+            <th mat-header-cell *matHeaderCellDef>{{ 'desc.model' | translate }}</th>
+            <td mat-cell *matCellDef="let doc">{{ 'model.' + doc.model | translate }}</td>
+          </ng-container>
+          <ng-container matColumnDef="pagesCount">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>{{ 'desc.pagesCount' | translate }}</th>
+            <td mat-cell *matCellDef="let doc">{{ doc.pagesCount ?? '—' }}</td>
+          </ng-container>
+          <ng-container matColumnDef="pagesWithAlto">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>{{ 'desc.pagesWithAlto' | translate }}</th>
+            <td mat-cell *matCellDef="let doc">{{ doc.pagesWithAlto ?? '—' }}</td>
+          </ng-container>
+          <ng-container matColumnDef="updatedAt">
+            <th mat-header-cell *matHeaderCellDef>{{ 'desc.updatedAt' | translate }}</th>
+            <td mat-cell *matCellDef="let doc">{{ doc.updatedAt | date: 'dd.MM.yyyy HH:mm:ss' }}</td>
+          </ng-container>
+          <ng-container matColumnDef="actions">
+            <th mat-header-cell *matHeaderCellDef></th>
+            <td mat-cell *matCellDef="let doc" (click)="$event.stopPropagation()" class="app-actions-cell">
+              <div class="app-actions-inline">
+                <button
+                  *ngIf="state.engineUsers?.length"
+                  mat-icon-button
+                  [matMenuTriggerFor]="engineMenuLocal"
+                  [matTooltip]="'action.generateAlto' | translate"
+                >
+                  <mat-icon>play_circle</mat-icon>
+                </button>
+                <mat-menu #engineMenuLocal="matMenu">
+                  <button mat-menu-item *ngFor="let engine of state.engineUsers" (click)="openGeneratePriorityDialog(doc, engine, $event)">
+                    {{ engine.username }}
+                  </button>
+                </mat-menu>
+                <button mat-icon-button (click)="openFetchPriorityDialog(doc.pid, $event)" [matTooltip]="'action.fetchFromKramerius' | translate">
+                  <mat-icon>cloud_download</mat-icon>
+                </button>
+                <a mat-icon-button [routerLink]="['/revision']" [queryParams]="{ pid: doc.pid }" [matTooltip]="'action.viewRevisions' | translate">
+                  <mat-icon>visibility</mat-icon>
+                </a>
+              </div>
+            </td>
+          </ng-container>
+          <tr mat-header-row *matHeaderRowDef="localColumns; sticky: true"></tr>
+          <tr
+            mat-row
+            *matRowDef="let row; columns: localColumns"
+            class="app-cursor-pointer"
+            (click)="canExpandOrCollapse(row) && toggleLocalSubtree(row, $event)"
+          ></tr>
+        </table>
+        <mat-paginator
+          [length]="localTotal"
+          [pageSize]="localPageSize"
+          [pageSizeOptions]="[5, 10, 25, 50]"
+          (page)="onLocalPageChanged($event)"
+          class="app-table-paginator"
+        ></mat-paginator>
+        <div *ngIf="localLevel0.length === 0" class="app-p-2 app-muted">{{ 'placeholder.noLocalDocuments' | translate }}</div>
+      </ng-container>
+
+      <!-- PID search results table (Kramerius + local) -->
+      <ng-container *ngIf="!isLoading && isPidSearchMode">
+        <table mat-table [dataSource]="bothTableRows" class="app-w-100 app-striped app-hover app-pid-table">
+          <ng-container matColumnDef="select">
+            <th mat-header-cell *matHeaderCellDef>
+              <mat-checkbox
+                [checked]="isAllBothSelected()"
+                [indeterminate]="selectedBothCount > 0 && !isAllBothSelected()"
+                (change)="toggleAllBothSelection($event)"
+              ></mat-checkbox>
+            </th>
+            <td mat-cell *matCellDef="let r" (click)="$event.stopPropagation()">
+              <mat-checkbox
+                *ngIf="isBothTopLevel(r)"
+                [checked]="isBothRowSelected(r)"
+                (change)="toggleBothSelection(r, $event)"
+              ></mat-checkbox>
+            </td>
+          </ng-container>
+          <ng-container matColumnDef="location">
+            <th mat-header-cell *matHeaderCellDef>{{ 'desc.location' | translate }}</th>
+            <td mat-cell *matCellDef="let r" class="app-location-cell">
+              <div class="app-location-row" [style.padding-left.px]="getRowLevel(r) * 24">
+                <span class="app-tree-toggle">
+                  <mat-spinner *ngIf="loadingPidChildrenPid === r.pid" diameter="22" class="app-inline-spinner"></mat-spinner>
+                  <button
+                    *ngIf="loadingPidChildrenPid !== r.pid && canExpandPidRow(r)"
+                    mat-icon-button
+                    (click)="togglePidSubtree(r, $event)"
+                    [matTooltip]="isPidRowExpanded(r.pid) ? ('button.collapse' | translate) : ('button.expand' | translate)"
+                  >
+                    <mat-icon>{{ isPidRowExpanded(r.pid) ? 'expand_more' : 'chevron_right' }}</mat-icon>
+                  </button>
+                  <span *ngIf="loadingPidChildrenPid !== r.pid && !canExpandPidRow(r)" class="app-expand-placeholder"></span>
+                </span>
+                <div class="app-location-badges">
+                  <span *ngIf="r.kramerius" class="app-badge app-badge-kramerius">{{ 'location.kramerius' | translate }}</span>
+                  <span *ngIf="hasLocalOrAlto(r)" class="app-badge app-badge-local">{{ 'location.local' | translate }}</span>
+                  <span *ngIf="isNotFound(r)" class="app-badge app-badge-not-found">{{ 'location.notFound' | translate }}</span>
+                </div>
+              </div>
+            </td>
+          </ng-container>
+          <ng-container matColumnDef="title">
+            <th mat-header-cell *matHeaderCellDef>{{ 'desc.title' | translate }}</th>
+            <td mat-cell *matCellDef="let r" class="app-dual-cell">
+              <ng-container *ngIf="!isNotFound(r)">
+                <ng-container *ngIf="formatDualTitle(r); let v">
+                  <div *ngIf="v.same">{{ v.same }}</div>
+                  <ng-container *ngIf="!v.same">
+                    <div *ngIf="v.kramerius" class="app-labeled"><span class="app-badge app-badge-kramerius">{{ 'location.kramerius' | translate }}</span> {{ v.kramerius }}</div>
+                    <div *ngIf="v.local" class="app-labeled"><span class="app-badge app-badge-local">{{ 'location.local' | translate }}</span> {{ v.local }}</div>
+                  </ng-container>
+                </ng-container>
+              </ng-container>
+            </td>
+          </ng-container>
+          <ng-container matColumnDef="pid">
+            <th mat-header-cell *matHeaderCellDef>{{ 'desc.pid' | translate }}</th>
+            <td mat-cell *matCellDef="let r">{{ r.pid }}</td>
+          </ng-container>
+          <ng-container matColumnDef="model">
+            <th mat-header-cell *matHeaderCellDef>{{ 'desc.model' | translate }}</th>
+            <td mat-cell *matCellDef="let r" class="app-dual-cell">
+              <ng-container *ngIf="!isNotFound(r)">
+                <ng-container *ngIf="formatDualModel(r); let v">
+                  <div *ngIf="v.same">{{ 'model.' + v.same | translate }}</div>
+                  <ng-container *ngIf="!v.same">
+                    <div *ngIf="v.kramerius" class="app-labeled"><span class="app-badge app-badge-kramerius">{{ 'location.kramerius' | translate }}</span> {{ 'model.' + v.kramerius | translate }}</div>
+                    <div *ngIf="v.local" class="app-labeled"><span class="app-badge app-badge-local">{{ 'location.local' | translate }}</span> {{ 'model.' + v.local | translate }}</div>
+                  </ng-container>
+                </ng-container>
+              </ng-container>
+            </td>
+          </ng-container>
+          <ng-container matColumnDef="level">
+            <th mat-header-cell *matHeaderCellDef>{{ 'desc.level' | translate }}</th>
+            <td mat-cell *matCellDef="let r" class="app-dual-cell">
+              <ng-container *ngIf="!isNotFound(r)">
+                <ng-container *ngIf="formatDualLevel(r); let v">
+                  <div *ngIf="v.same">{{ v.same }}</div>
+                  <ng-container *ngIf="!v.same">
+                    <div *ngIf="v.kramerius" class="app-labeled"><span class="app-badge app-badge-kramerius">{{ 'location.kramerius' | translate }}</span> {{ v.kramerius }}</div>
+                    <div *ngIf="v.local" class="app-labeled"><span class="app-badge app-badge-local">{{ 'location.local' | translate }}</span> {{ v.local }}</div>
+                  </ng-container>
+                </ng-container>
+              </ng-container>
+            </td>
+          </ng-container>
+          <ng-container matColumnDef="childrenCount">
+            <th mat-header-cell *matHeaderCellDef>{{ 'desc.childrenCount' | translate }}</th>
+            <td mat-cell *matCellDef="let r" class="app-dual-cell">
+              <ng-container *ngIf="!isNotFound(r)">
+                <div *ngIf="r.kramerius && getKrameriusChildrenCount(r) != null">{{ getKrameriusChildrenCount(r) }}</div>
+                <div *ngIf="!r.kramerius || getKrameriusChildrenCount(r) == null">—</div>
+              </ng-container>
+            </td>
+          </ng-container>
+          <ng-container matColumnDef="pagesCount">
+            <th mat-header-cell *matHeaderCellDef>{{ 'desc.pagesCount' | translate }}</th>
+            <td mat-cell *matCellDef="let r" class="app-dual-cell">
+              <ng-container *ngIf="!isNotFound(r)">
+                <ng-container *ngIf="formatDualPagesCount(r); let v">
+                  <div *ngIf="v.same">{{ v.same }}</div>
+                  <ng-container *ngIf="!v.same">
+                    <div *ngIf="v.kramerius" class="app-labeled"><span class="app-badge app-badge-kramerius">{{ 'location.kramerius' | translate }}</span> {{ v.kramerius }}</div>
+                    <div *ngIf="v.local" class="app-labeled"><span class="app-badge app-badge-local">{{ 'location.local' | translate }}</span> {{ v.local }}</div>
+                  </ng-container>
+                </ng-container>
+              </ng-container>
+            </td>
+          </ng-container>
+          <ng-container matColumnDef="pagesWithAlto">
+            <th mat-header-cell *matHeaderCellDef>{{ 'desc.pagesWithAlto' | translate }}</th>
+            <td mat-cell *matCellDef="let r" class="app-dual-cell">
+              <ng-container *ngIf="!isNotFound(r)">
+                <ng-container *ngIf="formatDualPagesWithAlto(r); let v">
+                  <div *ngIf="v.same">{{ v.same ?? '—' }}</div>
+                  <ng-container *ngIf="!v.same">
+                    <div *ngIf="v.kramerius != null" class="app-labeled"><span class="app-badge app-badge-kramerius">{{ 'location.kramerius' | translate }}</span> {{ v.kramerius }}</div>
+                    <div *ngIf="v.local != null" class="app-labeled"><span class="app-badge app-badge-local">{{ 'location.local' | translate }}</span> {{ v.local }}</div>
+                  </ng-container>
+                </ng-container>
+              </ng-container>
+            </td>
+          </ng-container>
+          <ng-container matColumnDef="updatedAt">
+            <th mat-header-cell *matHeaderCellDef>{{ 'desc.updatedAt' | translate }}</th>
+            <td mat-cell *matCellDef="let r" class="app-dual-cell">
+              <ng-container *ngIf="!isNotFound(r)">
+                <ng-container *ngIf="formatDualUpdatedAt(r); let v">
+                  <div *ngIf="v.same">{{ formatDate(v.same) }}</div>
+                  <ng-container *ngIf="!v.same">
+                    <div *ngIf="v.kramerius" class="app-labeled"><span class="app-badge app-badge-kramerius">{{ 'location.kramerius' | translate }}</span> {{ formatDate(v.kramerius) }}</div>
+                    <div *ngIf="v.local" class="app-labeled"><span class="app-badge app-badge-local">{{ 'location.local' | translate }}</span> {{ formatDate(v.local) }}</div>
+                  </ng-container>
+                </ng-container>
+              </ng-container>
+            </td>
+          </ng-container>
+          <ng-container matColumnDef="actions">
+            <th mat-header-cell *matHeaderCellDef></th>
+            <td mat-cell *matCellDef="let r" class="app-actions-cell" (click)="$event.stopPropagation()">
+              <div *ngIf="!isNotFound(r)" class="app-actions-inline">
+                <button
+                  *ngIf="state.engineUsers?.length && hasLocalOrAlto(r)"
+                  mat-icon-button
+                  [matMenuTriggerFor]="engineMenuBoth"
+                  [matTooltip]="'action.generateAlto' | translate"
+                >
+                  <mat-icon>play_circle</mat-icon>
+                </button>
+                <button
+                  *ngIf="state.engineUsers?.length && !hasLocalOrAlto(r)"
+                  mat-icon-button
+                  disabled
+                  [matTooltip]="'action.generateAlto' | translate"
+                >
+                  <mat-icon>play_circle</mat-icon>
+                </button>
+                <mat-menu #engineMenuBoth="matMenu">
+                  <button mat-menu-item *ngFor="let engine of state.engineUsers" (click)="onGenerateClick(r, engine, $event)">
+                    {{ engine.username }}
+                  </button>
+                </mat-menu>
+                <button
+                  *ngIf="r.kramerius"
+                  mat-icon-button
+                  (click)="openFetchPriorityDialog(r.pid, $event)"
+                  [matTooltip]="'action.fetchFromKramerius' | translate"
+                >
+                  <mat-icon>cloud_download</mat-icon>
+                </button>
+                <a
+                  *ngIf="hasLocalOrAlto(r)"
+                  mat-icon-button
+                  [routerLink]="['/revision']"
+                  [queryParams]="{ pid: r.pid }"
+                  [matTooltip]="'action.viewRevisions' | translate"
+                >
+                  <mat-icon>visibility</mat-icon>
+                </a>
+                <a
+                  *ngIf="!hasLocalOrAlto(r)"
+                  mat-icon-button
+                  disabled
+                  [matTooltip]="'action.viewRevisions' | translate"
+                >
+                  <mat-icon>visibility</mat-icon>
+                </a>
+              </div>
+            </td>
+          </ng-container>
+          <tr mat-header-row *matHeaderRowDef="bothColumns; sticky: true"></tr>
+          <tr
+            mat-row
+            *matRowDef="let row; columns: bothColumns"
+            class="app-cursor-pointer"
+            (click)="canExpandPidRow(row) && togglePidSubtree(row, $event)"
+          ></tr>
+        </table>
+        <div *ngIf="pidResults.length === 0" class="app-p-2 app-muted">{{ 'placeholder.noLocalDocuments' | translate }}</div>
+      </ng-container>
+
+    </div>
+  </div>
+</div>

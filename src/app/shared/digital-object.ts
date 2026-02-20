@@ -19,6 +19,7 @@ export interface DOHierarchy {
   rootPid: string;
   pagesCount: number;
   pagesWithAlto: number;
+  hasSubhierarchy: boolean;
 }
 
 export interface DOHierarchySearchRequest {
@@ -29,4 +30,6 @@ export interface DOHierarchySearchRequest {
   level?: number;
   offset?: number;
   limit?: number;
+  sortBy?: string;
+  sortOrder?: 'ASC' | 'DESC';
 }

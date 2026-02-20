@@ -23,6 +23,7 @@ import {
   AltoVersionSearchRequest,
 } from './shared/alto-version';
 import { Pageable } from './shared/pageable';
+import { DOHierarchy, DOHierarchySearchRequest } from './shared/digital-object';
 
 function toCurrentUser(data: any): CurrentUser {
   return {
@@ -170,10 +171,10 @@ export class AppService {
   searchBatches(
     filters: BatchSearchFilters,
     params?: {
-      offset?: number;
-      limit?: number;
-      orderBy?: string;
-      orderSort?: string;
+      page?: number;
+      size?: number;
+      sortBy?: string;
+      sortOrder?: string;
     },
   ): Observable<Pageable<Batch>> {
     let httpParams = new HttpParams();
@@ -196,14 +197,14 @@ export class AppService {
       httpParams = httpParams.set('type', String(filters.type));
     if (filters.instance != null)
       httpParams = httpParams.set('instance', filters.instance);
-    if (params?.offset != null)
-      httpParams = httpParams.set('offset', String(params.offset));
-    if (params?.limit != null)
-      httpParams = httpParams.set('limit', String(params.limit));
-    if (params?.orderBy != null)
-      httpParams = httpParams.set('orderBy', params.orderBy);
-    if (params?.orderSort != null)
-      httpParams = httpParams.set('orderSort', params.orderSort);
+    if (params?.page != null)
+      httpParams = httpParams.set('page', String(params.page));
+    if (params?.size != null)
+      httpParams = httpParams.set('size', String(params.size));
+    if (params?.sortBy != null && params?.sortOrder != null) {
+      const dir = String(params.sortOrder).toLowerCase();
+      httpParams = httpParams.set('sort', `${params.sortBy},${dir}`);
+    }
     return this.get<Pageable<Batch>>(`/batches`, httpParams).pipe(
       map((res: any) => ({
         content: res.content ?? res.items ?? [],
@@ -267,106 +268,40 @@ export class AppService {
     return this.post(`/alto-versions/${id}/archive`, null);
   }
 
-  // OLD
-  getDigitalObjectVersion(
+  searchDOHierarchy(
+    request: DOHierarchySearchRequest,
+  ): Observable<SearchResults<DOHierarchy>> {
+    const params = objectToParams(request);
+    return this.get<SearchResults<DOHierarchy>>(`/hierarchy/search`, params);
+  }
+
+  getKrameriusDOHierarchy(pid: string): Observable<DOHierarchy> {
+    return this.get<DOHierarchy>(`/hierarchy/${pid}/from-kramerius`);
+  }
+
+  getKrameriusChildrenDOHierarchy(pid: string): Observable<DOHierarchy[]> {
+    return this.get<DOHierarchy[]>(`/hierarchy/${pid}/children-from-kramerius`);
+  }
+
+  planFetchDOHierarchy(pid: string, priority: BatchPriority): Observable<any> {
+    return this.post(
+      `/hierarchy/${pid}/fetch-from-kramerius?priority=${priority}`,
+      null,
+    );
+  }
+
+  planGenerateForHierarchy(
     pid: string,
-    version: string,
-    login: string,
-  ): Observable<string> {
-    const params: HttpParams = new HttpParams()
-      .set('pid', pid)
-      .set('versionXml', version)
-      .set('login', login);
-    return this.get(`/db/object`, params);
+    engine: string,
+    priority: BatchPriority,
+  ): Observable<any> {
+    return this.post(
+      `/hierarchy/${pid}/generate-alto/${engine}?priority=${priority}`,
+      null,
+    );
   }
 
-  getDigitalObject(pid: string, instance: string): Observable<string> {
-    const params: HttpParams = new HttpParams().set('instance', instance);
-    return this.get(`/alto-versions/${pid}/related`, params);
-  }
-
-  getDigitalObjects(
-    login: string,
-    instance: string,
-    orderBy: string = 'datum',
-    orderSort: string = 'asc',
-  ): Observable<string> {
-    const params: HttpParams = new HttpParams()
-      .set('orderBy', orderBy)
-      .set('orderSort', orderSort)
-      .set('instance', instance)
-      .set('login', login);
-    return this.get(`/db/object`, params);
-  }
-
-  getAllDigitalObjects(params: HttpParams): Observable<string> {
-    return this.get(`/db/objects`, params);
-  }
-
-  getVersions(
-    pid: string,
-    login: string,
-    instance: string,
-    filterField?: string,
-    filterValue?: string,
-  ): Observable<string> {
-    const params: HttpParams = new HttpParams().set('pid', pid);
-    return this.get(`/db/objects`, params);
-  }
-
-  getAlto(pid: string, login: string, instance: string): Observable<string> {
-    const params: HttpParams = new HttpParams()
-      .set('pid', pid)
-      .set('instance', instance)
-      .set('login', login);
-    return this.get(`/object/alto`, params);
-  }
-
-  getAltoOriginal(
-    pid: string,
-    login: string,
-    instance: string,
-  ): Observable<string> {
-    const params: HttpParams = new HttpParams()
-      .set('pid', pid)
-      .set('instance', instance)
-      .set('login', login);
-    return this.get(`/object/altoOriginal`, params);
-  }
-
-  getAltoVersion(
-    pid: string,
-    versionXml: string,
-    login: string,
-    instance: string,
-  ): Observable<string> {
-    const params: HttpParams = new HttpParams()
-      .set('pid', pid)
-      .set('versionXml', versionXml)
-      .set('instance', instance)
-      .set('login', login);
-    return this.get(`/object/alto`, params);
-  }
-
-  getBatches(params: HttpParams): Observable<SearchResults<Batch>> {
-    return this.get<SearchResults<Batch>>(`/batches`, params);
-  }
-
-  markAsMajorVersion(data: any) {
-    // {"id":{{digitalObjectId}},"login":"inovatika"}
-    const url = `/object/stateAccepted`;
-    return this.post(url, data);
-  }
-
-  markForDeletion(data: any) {
-    // {"id":{{digitalObjectId}},"login":"inovatika"}
-    const url = `/object/stateRejected`;
-    return this.post(url, data);
-  }
-
-  uploadKramerius(data: any) {
-    // {"id":{{digitalObjectId}},"login":"inovatika"}
-    const url = `/object/uploadKramerius`;
-    return this.post(url, data);
+  planReindex(priority: BatchPriority): Observable<any> {
+    return this.post(`/system/reindex?priority=${priority}`, null);
   }
 }

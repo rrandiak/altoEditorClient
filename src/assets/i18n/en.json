@@ -1,86 +1,153 @@
 {
   "navbar": {
+    "home": "Home",
     "editing": "Editing",
     "revision": "Revision",
     "processManagement": "Process management",
-    "my_objects": "My editings",
+    "myEditing": "My editing",
+    "documentHierarchy": "Document hierarchy",
+    "maintenance": "Maintenance",
     "login": "Login",
     "logout": "Logout"
   },
   "button": {
+    "check": "Check",
+    "expand": "Expand",
+    "collapse": "Collapse",
     "save": "Save",
     "close": "Close",
-    "pen": "PERO",
     "edit": "Edit",
     "viewDetail": "Show detail",
-    "markAsMajorVersion": "Mark as major version",
-    "markForDeletion": "Mark for deletion",
-    "editTheGivenVersion": "Edit the given version",
-    "saveChangesToKramerius": "Save changes to Kramerius",
-    "saveChangesToProarc": "Save changes to ProArc",
-    "PERO": "Create new text layer using PERO",
-    "generate": "Create",
-    "logIn": "Login"
+    "generate": "Generate",
+    "run": "Run",
+    "zoomIn": "Zoom in",
+    "zoomOut": "Zoom out",
+    "zoomReset": "Reset zoom",
+    "ocrEditor": "OCR editor",
+    "xmlSource": "XML source",
+    "cancel": "Cancel",
+    "accept": "Accept version",
+    "reject": "Reject version",
+    "archive": "Archive version",
+    "logIn": "Log in",
+    "prev": "Previous document",
+    "next": "Next document",
+    "backToResults": "Back to results"
   },
   "desc": {
+    "welcome": "Welcome to AltoEditor!",
     "id": "Id",
     "pid": "Pid",
-    "createDate": "Created",
-    "updateDate": "Modified",
+    "createdAt": "Created",
+    "updatedAt": "Last updated",
     "label": "Label",
     "state": "State",
     "priority": "Priority",
+    "withPriority": "With priority",
+    "location": "Location",
+    "model": "Model",
+    "pagesCount": "Pages count",
+    "pagesWithAlto": "Pages with ALTO",
+    "title": "Title",
+    "version": "Version",
     "type": "Type",
     "instance": "Instance",
-    "date": "Date",
-    "edited": "Edited",
+    "versionList": "Version list",
+    "activeVersion": "Active version",
+    "editedBy": "Edited by",
+    "level": "Level",
+    "childrenCount": "Children count",
     "substate": "Substate",
-    "filterByPid": "Filter by pid",
-    "filterByDate": "Filter by date",
+    "filterByPid": "Filter by PID",
     "filterByLabel": "Filter by label",
     "filterByUser": "Filter by user",
-    "filterByCreateDate": "Filter by created date",
-    "filterByUpdateDate": "Filter by updated date",
-    "filterByStatus": "Filter by status",
+    "filterByCreatedAt": "Filter by created date",
+    "filterByUpdatedAt": "Filter by updated date",
+    "filterByState": "Filter by state",
     "filterByPriority": "Filter by priority",
-    "savedSuccess": "Changes successfully saved",
-    "PEROExists": "Alto file already exists",
-    "markSuccess": "Mark success",
-    "noPERO_dialog": "Create new text layer using PERO",
-    "version": "Version",
-    "connectedInstance": "Connected instance"
+    "filterByType": "Filter by type",
+    "acceptSuccess": "Version accepted",
+    "rejectSuccess": "Version rejected",
+    "archiveSuccess": "Version archived"
   },
-  "state": {
+  "action": {
+    "addOrCheckPids": "Add / check PIDs",
+    "backToLocalDocuments": "Back to local documents",
+    "generateAlto": "Generate ALTO",
+    "fetchFromKramerius": "Fetch from Kramerius",
+    "viewRevisions": "View revisions",
+    "reindex": "Reindex all"
+  },
+  "actionTitle": {
+    "fetchFromKramerius": "Fetch document hierarchy and ALTO versions from Kramerius",
+    "generateSinglePageAlto": "Generate ALTO for the selected page using engine {{engine}}",
+    "generateForHierarchy": "Generate ALTO for all pages in the selected hierarchy using engine {{engine}}",
+    "reindex": "Delete and rebuild all indexes"
+  },
+  "message": {
+    "altoVersionSaved": "ALTO version saved",
+    "altoVersionGenerationPlanned": "ALTO version generation planned",
+    "hierarchyFetchPlanned": "Document hierarchy fetch planned",
+    "reindexPlanned": "Reindex planned",
+    "error": "An unknown error occurred",
+    "confirmAccept": "Accept {{count}} version(s)?",
+    "confirmReject": "Reject {{count}} version(s)?",
+    "confirmArchive": "Archive {{count}} version(s)?"
+  },
+  "placeholder": {
+    "pids": "One PID per line",
+    "loading": "Loading…",
+    "noLocalDocuments": "No local documents."
+  },
+  "model": {
+    "page": "Page",
+    "periodical": "Periodical",
+    "periodicalvolume": "Periodical volume",
+    "periodicalitem": "Periodical issue",
+    "monograph": "Monograph",
+    "monographvolume": "Monograph volume"
+  },
+  "versionState": {
+    "ACTIVE": "Active version",
+    "ARCHIVED": "Archived",
+    "PENDING": "Pending review",
+    "STALE": "Stale",
+    "REJECTED": "Rejected"
+  },
+  "processState": {
     "PLANNED": "Planned",
     "RUNNING": "Running",
     "FAILED": "Failed",
-    "DONE": "Done",
+    "DONE": "Done"
+  },
+  "processSubstate": {
     "DOWNLOADING": "Downloading",
     "GENERATING": "Generating",
-    "SAVING": "Saving",
-    "REJECTED": "Rejected",
-    "EDITED": "Edited",
-    "ACCEPTED": "Accepted",
-    "UPLOADED": "Uploaded",
-    "NEW": "New",
-    "GENERATED": "Generated"
+    "SAVING": "Saving"
   },
-  "priority": {
+  "processPriority": {
     "LOW": "Low",
     "MEDIUM": "Medium",
     "HIGH": "High"
   },
-  "type": {
-    "MULTIPLE": "Multiple",
-    "SINGLE": "Single"
+  "processType": {
+    "GENERATE_SINGLE": "Generate for single page",
+    "GENERATE_FOR_HIERARCHY": "Generate for hierarchy",
+    "RETRIEVE_HIERARCHY": "Retrieve hierarchy",
+    "REINDEX": "Reindex"
+  },
+  "location": {
+    "local": "AltoEditor",
+    "kramerius": "Kramerius",
+    "notFound": "Not found"
   },
   "paginator": {
     "desc": {
       "Číslo stránky": "Page number",
       "Řazení": "Order by",
-      "itemsPerPageLabel" : "Records per page",
-      "nextPageLabel" : "Next page",
-      "previousPageLabel" : "Previous page",
+      "itemsPerPageLabel": "Records per page",
+      "nextPageLabel": "Next page",
+      "previousPageLabel": "Previous page",
       "firstPageLabel": "First page",
       "lastPageLabel": "Last page",
       "rangeLabel1": "0 of {{length}}",
@@ -89,5 +156,9 @@
     "tooltip": {
       "Přejděte číslo stránky": "Go to page"
     }
+  },
+  "lang": {
+    "cs": "Česky",
+    "en": "English"
   }
 }

@@ -35,7 +35,6 @@ export interface AltoVersion {
 }
 
 export interface AltoVersionSearchRelatedRequest {
-  users?: string[];
   instance?: string;
   targetPid?: string;
   hierarchyPid?: string;
@@ -47,10 +46,10 @@ export interface AltoVersionSearchRelatedRequest {
   states?: AltoVersionState[];
   offset?: number;
   limit?: number;
-  orderBy?: string;
-  orderSort?: 'asc' | 'desc';
+  sortBy?: string;
+  sortOrder?: 'ASC' | 'DESC';
 }
 
 export interface AltoVersionSearchRequest extends AltoVersionSearchRelatedRequest {
-  users?: string[];
+  users?: number[];
 }

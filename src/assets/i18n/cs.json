@@ -1,25 +1,25 @@
 {
   "navbar": {
+    "home": "Domov",
     "editing": "Editace",
     "revision": "Revize",
     "processManagement": "Správa procesů",
-    "my_objects": "Moje editace",
+    "myEditing": "Moje editace",
+    "documentHierarchy": "Hierarchie dokumentů",
+    "maintenance": "Údržba",
     "login": "Přihlásit",
     "logout": "Odhlásit se"
   },
   "button": {
+    "check": "Zkontrolovat",
+    "expand": "Rozbalit",
+    "collapse": "Sbalit",
     "save": "Uložit",
     "close": "Zavřít",
-    "pen": "PERO",
     "edit": "Editovat",
     "viewDetail": "Zobrazit detail",
-    "markAsMajorVersion": "Označit jako hlavní verzi",
-    "markForDeletion": "Označit ke smazání",
-    "editTheGivenVersion": "Editovat danou verzi",
-    "saveChangesToKramerius": "Uložit změny do Krameria",
-    "saveChangesToProarc": "Uložit změny do ProArcu",
-    "PERO": "Vygenerovat novou textovou vrstvu pomoci PERO",
     "generate": "Vygenerovat",
+    "run": "Spustit",
     "zoomIn": "Přiblížit",
     "zoomOut": "Oddálit",
     "zoomReset": "Resetovat zoom",
@@ -29,9 +29,13 @@
     "accept": "Přijmout verzi",
     "reject": "Odmítnout verzi",
     "archive": "Archivovat verzi",
-    "logIn": "Přihlásit se"
+    "logIn": "Přihlásit se",
+    "prev": "Předchozí dokument",
+    "next": "Následující dokument",
+    "backToResults": "Zpět na výsledky"
   },
   "desc": {
+    "welcome": "Vítejte v AltoEditoru!",
     "id": "Id",
     "pid": "Pid",
     "createdAt": "Vytvořeno",
@@ -39,58 +43,103 @@
     "label": "Název",
     "state": "Stav",
     "priority": "Priorita",
+    "withPriority": "S prioritou",
+    "location": "Umístění",
+    "model": "Model",
+    "pagesCount": "Počet stránek",
+    "pagesWithAlto": "Stránky s ALTO",
+    "title": "Název",
+    "version": "Verze",
     "type": "Typ",
     "instance": "Instance",
-    "date": "Datum",
     "versionList": "Seznam verzí",
     "activeVersion": "Aktivní verze",
-    "edited": "Editoval",
+    "editedBy": "Editoval",
+    "level": "Úroveň",
+    "childrenCount": "Počet potomků",
     "substate": "Podstav",
-    "filterByPid": "Filtrovat dle pidu",
-    "filterByDate": "Filtrovat dle data",
+    "filterByPid": "Filtrovat podle PID",
     "filterByLabel": "Filtrovat dle názvu",
     "filterByUser": "Filtrovat dle uživatele",
-    "filterByCreateDate": "Filtrovat dle data vytvoření",
-    "filterByUpdateDate": "Filtrovat dle data zmeny",
-    "filterByStatus": "Filtrovat dle stavu",
+    "filterByCreatedAt": "Filtrovat dle data vytvoření",
+    "filterByUpdatedAt": "Filtrovat dle data změny",
+    "filterByState": "Filtrovat dle stavu",
     "filterByPriority": "Filtrovat dle priority",
-    "generateWith": "Vygenerovat pomocí",
-    "savedSuccess": "Změny úspěšně uložené",
-    "PEROExists": "Alto soubor již byl přegenerován",
-    "markSuccess": "Označit úspěšně proběhlo",
-    "noPERO_dialog": "Vygenerovat novou textovou vrstvu pomoci PERO",
-    "version": "Verze",
-    "connectedInstance": "Připojená instance"
+    "filterByType": "Filtrovat dle typu",
+    "acceptSuccess": "Verze přijata",
+    "rejectSuccess": "Verze odmítnuta",
+    "archiveSuccess": "Verze archivována"
   },
-  "state": {
+  "action": {
+    "addOrCheckPids": "Přidat / zkontrolovat PIDy",
+    "backToLocalDocuments": "Zpět na lokální dokumenty",
+    "generateAlto": "Vygenerovat ALTO",
+    "fetchFromKramerius": "Načíst z Krameria",
+    "viewRevisions": "Zobrazit revize",
+    "reindex": "Vše reindexovat"
+  },
+  "actionTitle": {
+    "fetchFromKramerius": "Načíst hierarchii dokumentů a ALTO verze z Krameria",
+    "generateSinglePageAlto": "Vygenerovat ALTO pro vybranou stránku s použitím engine {{engine}}",
+    "generateForHierarchy": "Vygenerovat ALTO pro všechny stránky ve vybrané hierarchii s použitím engine {{engine}}",
+    "reindex": "Smazat a znovu vybudovat všechny indexy"
+  },
+  "message": {
+    "altoVersionSaved": "ALTO verze uložena",
+    "altoVersionGenerationPlanned": "Vygenerování ALTO verze naplánováno",
+    "hierarchyFetchPlanned": "Načtení hierarchie dokumentů naplánováno",
+    "reindexPlanned": "Reindexace naplánována",
+    "error": "Nastala neznámá chyba",
+    "confirmAccept": "Přijmout {{count}} verzi/verzí?",
+    "confirmReject": "Odmítnout {{count}} verzi/verzí?",
+    "confirmArchive": "Archivovat {{count}} verzi/verzí?"
+  },
+  "placeholder": {
+    "pids": "Jeden PID na řádek",
+    "loading": "Načítání…",
+    "noLocalDocuments": "Žádné lokální dokumenty."
+  },
+  "model": {
+    "page": "Stránka",
+    "periodical": "Periodikum",
+    "periodicalvolume": "Ročník periodika",
+    "periodicalitem": "Číslo periodika",
+    "monograph": "Monografie",
+    "monographvolume": "Část monografie"
+  },
+  "versionState": {
     "ACTIVE": "Aktivní verze",
     "ARCHIVED": "Archivováno",
     "PENDING": "Čeká na revizi",
     "STALE": "Zastaralé",
+    "REJECTED": "Odmítnuto"
+  },
+  "processState": {
     "PLANNED": "Plánované",
     "RUNNING": "Běží",
     "FAILED": "Chyba",
-    "DONE": "Dokončeno",
+    "DONE": "Dokončeno"
+  },
+  "processSubstate": {
     "DOWNLOADING": "Stahování",
     "GENERATING": "Generování",
-    "SAVING": "Ukládání",
-    "REJECTED": "Odmítnuto",
-    "EDITED": "Upraveno",
-    "ACCEPTED": "Přijato",
-    "UPLOADED": "Nahráno",
-    "NEW": "Nové",
-    "GENERATED": "Vygenerováno"
+    "SAVING": "Ukládání"
   },
-  "priority": {
+  "processPriority": {
     "LOW": "Nízká",
     "MEDIUM": "Střední",
     "HIGH": "Vysoká"
   },
-  "type": {
+  "processType": {
     "GENERATE_SINGLE": "Generování pro jednu stránku",
     "GENERATE_FOR_HIERARCHY": "Generování pro hierarchii",
     "RETRIEVE_HIERARCHY": "Načtení hierarchie",
     "REINDEX": "Reindexace"
+  },
+  "location": {
+    "local": "AltoEditor",
+    "kramerius": "Kramerius",
+    "notFound": "Nenalezeno"
   },
   "paginator": {
     "desc": {
@@ -107,5 +156,9 @@
     "tooltip": {
       "Přejděte číslo stránky": "Přejít na stránku"
     }
+  },
+  "lang": {
+    "cs": "Česky",
+    "en": "English"
   }
 }

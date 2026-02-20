@@ -1,0 +1,18 @@
+<div class="app-fxLayout-column app-fxFlexFill">
+  <div class="app-breadcrumbsbar app-fxLayout-row app-fxLayout-center-v">
+    <div class="app-breadcrumbs app-fxFlex app-fxLayout-row app-fxLayout-center-v">
+      <a routerLink="/"><mat-icon>home</mat-icon></a>
+      <span class="app-separator">/</span>
+      <span class="app-last">{{ 'navbar.maintenance' | translate }}</span>
+    </div>
+  </div>
+
+  <div class="app-content-wrapper app-fxFlex app-oh app-oa-y">
+    <div class="app-p-2 app-h-100">
+      <button mat-stroked-button color="primary" (click)="openReindexDialog()">
+        <mat-icon>refresh</mat-icon>
+        {{ 'action.reindex' | translate }}
+      </button>
+    </div>
+  </div>
+</div>

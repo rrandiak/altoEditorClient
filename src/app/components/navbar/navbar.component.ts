@@ -7,6 +7,7 @@ import { ActivatedRoute, RouterModule, Router, NavigationStart, UrlSegmentGroup 
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { filter, interval, Subscription } from 'rxjs';
 import { AuthService } from 'src/app/auth.service';
+import { AppState } from 'src/app/shared/app.state';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatMenuModule } from '@angular/material/menu';
 import { AppConfiguration } from 'src/app/app-configuration';
@@ -31,6 +32,7 @@ export class NavbarComponent {
     private router: Router,
     private route: ActivatedRoute,
     public auth: AuthService,
+    public state: AppState,
     public translator: TranslateService,
     private config: AppConfiguration) { }
 

@@ -12,6 +12,7 @@ import {
   BatchPriority,
   BatchSearchFilters,
   BatchState,
+  BatchType,
 } from 'src/app/shared/batch';
 import { MatSortModule } from '@angular/material/sort';
 import {
@@ -74,6 +75,7 @@ const year = today.getFullYear();
 export class ProcessManagementComponent {
   states: BatchState[] = Object.values(BatchState);
   priorities: BatchPriority[] = Object.values(BatchPriority);
+  types: BatchType[] = Object.values(BatchType);
 
   displayedColumns: string[] = [
     'id',
@@ -94,19 +96,11 @@ export class ProcessManagementComponent {
     createdAfter: new FormControl(),
     updatedAfter: new FormControl(),
   };
-  sortBy: string = 'updatedAt';
+  sortBy: string = 'createdAt';
   orderSort: string = 'desc';
   totalRows: number = 0;
   pageIndex: number = 0;
   pageSize: number = 25;
-
-  // pidFilter: string;
-  // createdAfterFilter = new FormControl();
-  // updatedAfterFilter = new FormControl();
-  // stateFilter: string;
-  // priorityFilter: string;
-  // typeFilter: string;
-  // instanceFilter: string;
 
   constructor(
     private _adapter: DateAdapter<any>,
@@ -127,13 +121,12 @@ export class ProcessManagementComponent {
   }
 
   getBatches() {
-    const offset = this.pageIndex * this.pageSize;
     this.service
       .searchBatches(this.filters, {
-        offset,
-        limit: this.pageSize,
-        orderBy: this.sortBy,
-        orderSort: this.orderSort,
+        page: this.pageIndex,
+        size: this.pageSize,
+        sortBy: this.sortBy,
+        sortOrder: this.orderSort === 'asc' ? 'ASC' : 'DESC',
       })
       .subscribe((res) => {
         this.batches = res.content;
@@ -143,7 +136,8 @@ export class ProcessManagementComponent {
 
   onSortChange(e: { active: string; direction: 'asc' | 'desc' | '' }) {
     this.sortBy = e.active || 'updatedAt';
-    this.orderSort = e.direction === 'asc' || e.direction === 'desc' ? e.direction : 'desc';
+    this.orderSort =
+      e.direction === 'asc' || e.direction === 'desc' ? e.direction : 'desc';
     this.pageIndex = 0;
     this.getBatches();
   }

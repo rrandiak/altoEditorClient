@@ -7,7 +7,7 @@ import { MatMenuModule } from '@angular/material/menu';
 import { TranslateModule } from '@ngx-translate/core';
 import { ViewerComponent } from 'src/app/components/viewer/viewer.component';
 import { AppService } from 'src/app/app.service';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { AppConfiguration } from 'src/app/app-configuration';
 import { FormsModule } from '@angular/forms';
 import { AppState } from 'src/app/shared/app.state';
@@ -22,9 +22,9 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import {
-  GeneratePriorityDialogComponent,
-  GeneratePriorityDialogData,
-} from 'src/app/components/generate-priority-dialog/generate-priority-dialog.component';
+  PlanProcessDialogComponent,
+  PlanProcessDialogData,
+} from 'src/app/components/plan-process-dialog/plan-process-dialog.component';
 import { UserInfo } from 'src/app/shared/user-info';
 import { BatchPriority } from 'src/app/shared/batch';
 
@@ -69,6 +69,7 @@ export class EditingComponent implements OnInit {
   constructor(
     public dialog: MatDialog,
     private route: ActivatedRoute,
+    private router: Router,
     private config: AppConfiguration,
     private service: AppService,
     public state: AppState,
@@ -104,9 +105,11 @@ export class EditingComponent implements OnInit {
           if (status === 400) {
             this.service.showSnackBar(message || 'desc.badRequest', true);
           } else if (status === 404) {
-            this.service.showSnackBar('desc.notFound', true);
+            this.router.navigate(['/document-hierarchy'], {
+              queryParams: { pid: this.pid },
+            });
           } else {
-            this.service.showSnackBar(message || 'desc.error', true);
+            this.service.showSnackBar(message || 'message.error', true);
           }
         },
       });
@@ -240,8 +243,11 @@ export class EditingComponent implements OnInit {
   }
 
   openGeneratePriorityDialog(engine: UserInfo): void {
-    const data: GeneratePriorityDialogData = { engine };
-    const ref = this.dialog.open(GeneratePriorityDialogComponent, {
+    const data: PlanProcessDialogData = {
+      title: 'actionTitle.generateSinglePageAlto',
+      titleParams: { engine: engine.username },
+    };
+    const ref = this.dialog.open(PlanProcessDialogComponent, {
       data,
       width: '320px',
     });
