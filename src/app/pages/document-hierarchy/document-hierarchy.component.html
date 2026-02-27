@@ -7,19 +7,10 @@
     </div>
   </div>
 
-  <div class="app-content-wrapper app-fxFlex app-oh app-oa-y">
-    <div class="app-p-2 app-h-100 app-border-wrapper">
-      <!-- Add/Check or Back to local + batch actions -->
+  <div class="app-content-wrapper app-table-scroll app-fxFlex app-oh">
+    <!-- Fixed toolbar: buttons, textarea, confirm - not scrollable -->
+    <div class="app-hierarchy-toolbar app-p-2 app-border-wrapper">
       <div class="app-mb-2 app-fxLayout-row app-fxLayout-center-v" style="gap: 0.5rem; flex-wrap: wrap;">
-        <button
-          *ngIf="!isPidSearchMode"
-          mat-stroked-button
-          (click)="togglePidInput()"
-          type="button"
-        >
-          <mat-icon>{{ showPidInput ? 'expand_less' : 'expand_more' }}</mat-icon>
-          {{ 'action.addOrCheckPids' | translate }}
-        </button>
         <button
           *ngIf="isPidSearchMode"
           mat-stroked-button
@@ -29,7 +20,24 @@
           <mat-icon>arrow_back</mat-icon>
           {{ 'action.backToLocalDocuments' | translate }}
         </button>
-        <ng-container *ngIf="!isLoading && selectedCount > 0 && (generateEligibleCount > 0 || fetchEligibleCount > 0)">
+        <button
+          mat-stroked-button
+          (click)="togglePidInput()"
+          type="button"
+        >
+          <mat-icon>{{ showPidInput ? 'expand_less' : 'expand_more' }}</mat-icon>
+          {{ 'action.addOrCheckPids' | translate }}
+        </button>
+        <ng-container *ngIf="!isLoading && selectedCount > 0 && (generateEligibleCount > 0 || fetchEligibleCount > 0 || acceptEligibleCount > 0)">
+          <button
+            *ngIf="fetchEligibleCount > 0"
+            mat-stroked-button
+            (click)="openBatchFetchDialog($event)"
+            [disabled]="batchProgress !== null"
+          >
+            <mat-icon>cloud_download</mat-icon>
+            {{ 'action.fetchFromKramerius' | translate }} ({{ fetchEligibleCount }})
+          </button>
           <button
             *ngIf="state.engineUsers?.length && generateEligibleCount > 0"
             mat-stroked-button
@@ -45,20 +53,25 @@
             </button>
           </mat-menu>
           <button
-            *ngIf="fetchEligibleCount > 0"
+            *ngIf="state.engineUsers?.length && acceptEligibleCount > 0"
             mat-stroked-button
-            (click)="openBatchFetchDialog($event)"
+            [matMenuTriggerFor]="batchAcceptMenu"
             [disabled]="batchProgress !== null"
           >
-            <mat-icon>cloud_download</mat-icon>
-            {{ 'action.fetchFromKramerius' | translate }} ({{ fetchEligibleCount }})
+            <mat-icon>check_circle</mat-icon>
+            {{ 'action.acceptEngineVersions' | translate }} ({{ acceptEligibleCount }})
           </button>
+          <mat-menu #batchAcceptMenu="matMenu">
+            <button mat-menu-item *ngFor="let engine of state.engineUsers" (click)="openBatchAcceptDialogWithEngine(engine, $event)">
+              {{ engine.username }}
+            </button>
+          </mat-menu>
           <span *ngIf="batchProgress" class="app-ml-2" style="font-size: 0.9em; color: #666;">
             {{ batchProgress.planned }} / {{ batchProgress.total }}
           </span>
         </ng-container>
       </div>
-      <div *ngIf="showPidInput && !isPidSearchMode" class="app-mb-4 app-p-2 app-border-wrapper">
+      <div *ngIf="showPidInput" class="app-mb-2 app-p-2 app-border-wrapper">
         <mat-form-field class="app-w-100" appearance="outline">
           <mat-label>{{ 'placeholder.pids' | translate }}</mat-label>
           <textarea
@@ -76,7 +89,10 @@
           {{ 'button.check' | translate }}
         </button>
       </div>
+    </div>
 
+    <!-- Scrollable table area -->
+    <div class="app-table-scroll-inner app-p-2 app-border-wrapper">
       <!-- Loading -->
       <div *ngIf="isLoading" class="app-p-2">{{ 'placeholder.loading' | translate }}</div>
 
@@ -145,12 +161,15 @@
           </ng-container>
           <ng-container matColumnDef="updatedAt">
             <th mat-header-cell *matHeaderCellDef>{{ 'desc.updatedAt' | translate }}</th>
-            <td mat-cell *matCellDef="let doc">{{ doc.updatedAt | date: 'dd.MM.yyyy HH:mm:ss' }}</td>
+            <td mat-cell *matCellDef="let doc">{{ doc.updatedAt | appDateTime }}</td>
           </ng-container>
           <ng-container matColumnDef="actions">
             <th mat-header-cell *matHeaderCellDef></th>
             <td mat-cell *matCellDef="let doc" (click)="$event.stopPropagation()" class="app-actions-cell">
               <div class="app-actions-inline">
+                <button mat-icon-button (click)="openFetchPriorityDialog(doc.pid, $event)" [matTooltip]="'action.fetchFromKramerius' | translate">
+                  <mat-icon>cloud_download</mat-icon>
+                </button>
                 <button
                   *ngIf="state.engineUsers?.length"
                   mat-icon-button
@@ -164,10 +183,20 @@
                     {{ engine.username }}
                   </button>
                 </mat-menu>
-                <button mat-icon-button (click)="openFetchPriorityDialog(doc.pid, $event)" [matTooltip]="'action.fetchFromKramerius' | translate">
-                  <mat-icon>cloud_download</mat-icon>
+                <button
+                  *ngIf="state.engineUsers?.length"
+                  mat-icon-button
+                  [matMenuTriggerFor]="acceptEngineMenuLocal"
+                  [matTooltip]="'action.acceptEngineVersions' | translate"
+                >
+                  <mat-icon>check_circle</mat-icon>
                 </button>
-                <a mat-icon-button [routerLink]="['/revision']" [queryParams]="{ pid: doc.pid }" [matTooltip]="'action.viewRevisions' | translate">
+                <mat-menu #acceptEngineMenuLocal="matMenu">
+                  <button mat-menu-item *ngFor="let engine of state.engineUsers" (click)="openAcceptEnginePriorityDialog(doc.pid, engine, $event)">
+                    {{ engine.username }}
+                  </button>
+                </mat-menu>
+                <a mat-icon-button [routerLink]="['/revision']" [queryParams]="{ pid: doc.pid, sortBy: 'pageIndex', sortOrder: 'asc' }" [matTooltip]="'action.viewRevisions' | translate">
                   <mat-icon>visibility</mat-icon>
                 </a>
               </div>
@@ -322,10 +351,10 @@
             <td mat-cell *matCellDef="let r" class="app-dual-cell">
               <ng-container *ngIf="!isNotFound(r)">
                 <ng-container *ngIf="formatDualUpdatedAt(r); let v">
-                  <div *ngIf="v.same">{{ formatDate(v.same) }}</div>
+                  <div *ngIf="v.same">{{ v.same | appDateTime }}</div>
                   <ng-container *ngIf="!v.same">
-                    <div *ngIf="v.kramerius" class="app-labeled"><span class="app-badge app-badge-kramerius">{{ 'location.kramerius' | translate }}</span> {{ formatDate(v.kramerius) }}</div>
-                    <div *ngIf="v.local" class="app-labeled"><span class="app-badge app-badge-local">{{ 'location.local' | translate }}</span> {{ formatDate(v.local) }}</div>
+                    <div *ngIf="v.kramerius" class="app-labeled"><span class="app-badge app-badge-kramerius">{{ 'location.kramerius' | translate }}</span> {{ v.kramerius | appDateTime }}</div>
+                    <div *ngIf="v.local" class="app-labeled"><span class="app-badge app-badge-local">{{ 'location.local' | translate }}</span> {{ v.local | appDateTime }}</div>
                   </ng-container>
                 </ng-container>
               </ng-container>
@@ -335,6 +364,14 @@
             <th mat-header-cell *matHeaderCellDef></th>
             <td mat-cell *matCellDef="let r" class="app-actions-cell" (click)="$event.stopPropagation()">
               <div *ngIf="!isNotFound(r)" class="app-actions-inline">
+                <button
+                  *ngIf="r.kramerius"
+                  mat-icon-button
+                  (click)="openFetchPriorityDialog(r.pid, $event)"
+                  [matTooltip]="'action.fetchFromKramerius' | translate"
+                >
+                  <mat-icon>cloud_download</mat-icon>
+                </button>
                 <button
                   *ngIf="state.engineUsers?.length && hasLocalOrAlto(r)"
                   mat-icon-button
@@ -357,18 +394,31 @@
                   </button>
                 </mat-menu>
                 <button
-                  *ngIf="r.kramerius"
+                  *ngIf="state.engineUsers?.length && hasLocalOrAlto(r)"
                   mat-icon-button
-                  (click)="openFetchPriorityDialog(r.pid, $event)"
-                  [matTooltip]="'action.fetchFromKramerius' | translate"
+                  [matMenuTriggerFor]="acceptEngineMenuBoth"
+                  [matTooltip]="'action.acceptEngineVersions' | translate"
                 >
-                  <mat-icon>cloud_download</mat-icon>
+                  <mat-icon>check_circle</mat-icon>
                 </button>
+                <button
+                  *ngIf="state.engineUsers?.length && !hasLocalOrAlto(r)"
+                  mat-icon-button
+                  disabled
+                  [matTooltip]="'action.acceptEngineVersions' | translate"
+                >
+                  <mat-icon>check_circle</mat-icon>
+                </button>
+                <mat-menu #acceptEngineMenuBoth="matMenu">
+                  <button mat-menu-item *ngFor="let engine of state.engineUsers" (click)="openAcceptEnginePriorityDialog(r.pid, engine, $event)">
+                    {{ engine.username }}
+                  </button>
+                </mat-menu>
                 <a
                   *ngIf="hasLocalOrAlto(r)"
                   mat-icon-button
                   [routerLink]="['/revision']"
-                  [queryParams]="{ pid: r.pid }"
+                  [queryParams]="{ pid: r.pid, sortBy: 'pageIndex', sortOrder: 'asc' }"
                   [matTooltip]="'action.viewRevisions' | translate"
                 >
                   <mat-icon>visibility</mat-icon>

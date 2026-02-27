@@ -38,6 +38,7 @@ import { UserInfo } from 'src/app/shared/user-info';
 import { forkJoin, of } from 'rxjs';
 import { catchError, map, switchMap } from 'rxjs/operators';
 import { AltoVersionContent } from 'src/app/shared/alto-version';
+import { AppDateTimePipe } from 'src/app/shared/app-date-time.pipe';
 
 /** Kramerius can return childrenCount. */
 export interface KrameriusDOHierarchy extends DOHierarchy {
@@ -73,6 +74,7 @@ export interface PidCheckResult {
     MatSortModule,
     MatProgressSpinnerModule,
     MatCheckboxModule,
+    AppDateTimePipe,
   ],
   templateUrl: './document-hierarchy.component.html',
   styleUrls: ['./document-hierarchy.component.scss'],
@@ -640,6 +642,41 @@ export class DocumentHierarchyComponent implements OnInit {
       });
   }
 
+  openAcceptEnginePriorityDialog(
+    pid: string,
+    engine: UserInfo,
+    event: Event,
+  ): void {
+    event.stopPropagation();
+    this.dialog
+      .open(PlanProcessDialogComponent, {
+        data: {
+          title: 'actionTitle.acceptEngineVersions',
+          titleParams: { engine: engine.username },
+        } as PlanProcessDialogData,
+        width: '320px',
+      })
+      .afterClosed()
+      .subscribe((result) => {
+        if (result?.priority) {
+          this.service
+            .planAcceptEngineVersions(pid, engine.username, result.priority)
+            .subscribe({
+              next: () =>
+                this.service.showSnackBar(
+                  'message.acceptEngineVersionsPlanned',
+                  false,
+                ),
+              error: (err) =>
+                this.service.showSnackBar(
+                  err?.error?.message || 'message.error',
+                  true,
+                ),
+            });
+        }
+      });
+  }
+
   openFetchPriorityDialog(pid: string, event: Event): void {
     event.stopPropagation();
     this.dialog
@@ -682,12 +719,6 @@ export class DocumentHierarchyComponent implements OnInit {
     if (this.isPageModel(r)) return null;
     const k = r.kramerius as KrameriusDOHierarchy | null;
     return k?.childrenCount ?? null;
-  }
-
-  formatDate(d: string | undefined): string {
-    if (!d) return '—';
-    const date = new Date(d);
-    return isNaN(date.getTime()) ? '—' : date.toLocaleString('cs-CZ');
   }
 
   // --- Selection (top-level rows only) ---
@@ -783,6 +814,10 @@ export class DocumentHierarchyComponent implements OnInit {
     return this.isPidSearchMode
       ? this.getBothPidsEligibleForFetch().length
       : this.selectedLocalCount;
+  }
+  /** Same as generateEligibleCount - objects must be in AltoEditor (local or ALTO). */
+  get acceptEligibleCount(): number {
+    return this.generateEligibleCount;
   }
 
   openBatchGenerateDialog(event: Event): void {
@@ -908,6 +943,61 @@ export class DocumentHierarchyComponent implements OnInit {
         return;
       }
       this.service.planFetchDOHierarchy(pids[i], priority).subscribe({
+        next: () => {
+          this.batchProgress = { planned: done + 1, total: pids.length };
+          done++;
+          run(i + 1);
+        },
+        error: (err) => {
+          this.batchProgress = null;
+          this.service.showSnackBar(
+            err?.error?.message || 'message.error',
+            true,
+          );
+        },
+      });
+    };
+    run(0);
+  }
+
+  openBatchAcceptDialogWithEngine(engine: UserInfo, event: Event): void {
+    event.stopPropagation();
+    const pids = this.isPidSearchMode
+      ? this.getBothPidsEligibleForGenerate()
+      : this.getLocalPidsEligibleForGenerate();
+    if (pids.length === 0) {
+      this.service.showSnackBar('message.error', true);
+      return;
+    }
+    this.dialog
+      .open(PlanProcessDialogComponent, {
+        data: {
+          title: 'actionTitle.acceptEngineVersions',
+          titleParams: { engine: engine.username },
+        } as PlanProcessDialogData,
+        width: '320px',
+      })
+      .afterClosed()
+      .subscribe((result) => {
+        if (result?.priority) {
+          this.batchAccept(pids, engine.username, result.priority);
+        }
+      });
+  }
+  private batchAccept(pids: string[], engine: string, priority: BatchPriority): void {
+    this.batchProgress = { planned: 0, total: pids.length };
+    let done = 0;
+    const run = (i: number) => {
+      if (i >= pids.length) {
+        this.batchProgress = null;
+        this.service.showSnackBar('message.acceptEngineVersionsPlanned', false);
+        this.selectedLocalPids.clear();
+        this.selectedBothPids.clear();
+        this.selectedLocalPids = new Set();
+        this.selectedBothPids = new Set();
+        return;
+      }
+      this.service.planAcceptEngineVersions(pids[i], engine, priority).subscribe({
         next: () => {
           this.batchProgress = { planned: done + 1, total: pids.length };
           done++;

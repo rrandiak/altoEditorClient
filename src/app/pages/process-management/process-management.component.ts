@@ -39,6 +39,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatButtonModule } from '@angular/material/button';
 import { PaginatorI18n } from 'src/app/shared/paginator-i18n';
+import { AppDateTimePipe } from 'src/app/shared/app-date-time.pipe';
 
 const today = new Date();
 const month = today.getMonth();
@@ -68,6 +69,7 @@ const year = today.getFullYear();
     MatSortModule,
     MatPaginatorModule,
     MatButtonModule,
+    AppDateTimePipe,
   ],
   templateUrl: './process-management.component.html',
   styleUrls: ['./process-management.component.scss'],
@@ -78,17 +80,16 @@ export class ProcessManagementComponent {
   types: BatchType[] = Object.values(BatchType);
 
   displayedColumns: string[] = [
-    'id',
-    'pid',
-    'createdAt',
-    'updatedAt',
-    'state',
-    'substate',
-    'priority',
+    'createdBy',
     'type',
     'instance',
+    'pid',
+    'engine',
+    'priority',
+    'state',
+    'createdAt',
+    'updatedAt',
   ];
-  filterColumns: string[] = [];
 
   batches: Batch[] = [];
   filters: BatchSearchFilters = {};
@@ -97,7 +98,7 @@ export class ProcessManagementComponent {
     updatedAfter: new FormControl(),
   };
   sortBy: string = 'createdAt';
-  orderSort: string = 'desc';
+  orderSort: 'asc' | 'desc' = 'desc';
   totalRows: number = 0;
   pageIndex: number = 0;
   pageSize: number = 25;
@@ -113,11 +114,7 @@ export class ProcessManagementComponent {
   ngOnInit() {
     this._locale = 'cs';
     this._adapter.setLocale(this._locale);
-
     this.getBatches();
-    this.displayedColumns.forEach((c) => {
-      this.filterColumns.push(c + '-filter');
-    });
   }
 
   getBatches() {
@@ -179,5 +176,13 @@ export class ProcessManagementComponent {
     this.pageSize = e.pageSize;
     this.pageIndex = e.pageIndex;
     this.getBatches();
+  }
+
+  /** Progress 0–100 when estimatedItemCount and processedItemCount are set, else null. */
+  getProgressPercent(batch: Batch): number | null {
+    const total = batch.estimatedItemCount;
+    const done = batch.processedItemCount;
+    if (total == null || total <= 0 || done == null || done < 0) return null;
+    return Math.min(100, (done / total) * 100);
   }
 }

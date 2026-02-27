@@ -29,13 +29,14 @@
       </span>
     </div>
   </div>
-  <div class="app-content-wrapper app-fxFlex app-oh app-oa-y">
-    <div class="app-p-2 app-h-100 app-border-wrapper">
+  <div class="app-content-wrapper app-table-scroll app-fxFlex app-oh">
+    <div class="app-table-scroll-inner app-p-2 app-border-wrapper">
       <table mat-table [dataSource]="revisions" class="app-w-100 app-striped app-hover"
-        matSort (matSortChange)="onSortChange($event)">
-        <ng-container matColumnDef="select-filter">
-          <th mat-header-cell *matHeaderCellDef></th>
-        </ng-container>
+        matSort
+        [matSortActive]="sortBy"
+        [matSortDirection]="orderSort"
+        [matSortDisableClear]="true"
+        (matSortChange)="onSortChange($event)">
         <ng-container matColumnDef="select">
           <th mat-header-cell *matHeaderCellDef>
             <mat-checkbox
@@ -51,90 +52,110 @@
             ></mat-checkbox>
           </td>
         </ng-container>
-        <ng-container matColumnDef="label-filter">
-          <th mat-header-cell *matHeaderCellDef>
-            <mat-form-field>
-              <input matInput type="text" id="labelFilter" [(ngModel)]="labelFilter" (change)="filter('label', labelFilter)" [placeholder]="'desc.filterByLabel' | translate">
-              <button mat-icon-button matIconSuffix color="warn" *ngIf="labelFilter" (click)="filter('label', ''); labelFilter = ''"><mat-icon>clear</mat-icon></button>
-            </mat-form-field>
-          </th>
-        </ng-container>
+
         <ng-container matColumnDef="label">
-          <th mat-header-cell *matHeaderCellDef mat-sort-header>{{ 'desc.label' | translate }}</th>
+          <th mat-header-cell *matHeaderCellDef class="app-header-cell-with-filter">
+            <div class="app-header-inner">
+              <mat-form-field class="app-header-filter" (click)="$event.stopPropagation()">
+                <input matInput type="text" id="labelFilter" [(ngModel)]="labelFilter" (change)="filter('label', labelFilter)" [placeholder]="'desc.filterByLabel' | translate">
+                <button mat-icon-button matIconSuffix color="warn" *ngIf="labelFilter" (click)="filter('label', ''); labelFilter = ''"><mat-icon>clear</mat-icon></button>
+              </mat-form-field>
+              <div class="app-header-title">
+                <span mat-sort-header="label">{{ 'desc.label' | translate }}</span>
+              </div>
+            </div>
+          </th>
           <td mat-cell *matCellDef="let element">{{ versionLabel(element) }}</td>
         </ng-container>
 
-        <ng-container matColumnDef="updatedAt-filter">
-          <th mat-header-cell *matHeaderCellDef>
-            <mat-form-field>
-              <input matInput [matDatepicker]="picker" [formControl]="updatedAfterFilter" (dateChange)="updatedAfterChanged($event, updatedAfterFilter)" [placeholder]="'desc.filterByUpdatedAt' | translate">
-              <button mat-icon-button matIconSuffix color="warn" *ngIf="updatedAfterFilter.value" (click)="updatedAfterFilter.setValue(null); filter('updatedAfter', '')"><mat-icon>clear</mat-icon></button>
-              <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
-              <mat-datepicker #picker></mat-datepicker>
-            </mat-form-field>
+        <ng-container matColumnDef="pageIndex">
+          <th mat-header-cell *matHeaderCellDef class="app-header-cell-with-filter">
+            <div class="app-header-inner">
+              <div class="app-header-title">
+                <span mat-sort-header="pageIndex">{{ 'desc.pageIndex' | translate }}</span>
+              </div>
+            </div>
           </th>
-        </ng-container>
-        <ng-container matColumnDef="updatedAt">
-          <th mat-header-cell *matHeaderCellDef mat-sort-header>{{ 'desc.updatedAt' | translate }}</th>
-          <td mat-cell *matCellDef="let element">{{ element.updatedAt | date : 'dd.MM.yyyy HH:mm:ss' }}</td>
+          <td mat-cell *matCellDef="let element">{{ element.pageIndex }}</td>
         </ng-container>
 
-        <ng-container matColumnDef="version-filter">
-          <th mat-header-cell *matHeaderCellDef></th>
+        <ng-container matColumnDef="username">
+          <th mat-header-cell *matHeaderCellDef class="app-header-cell-with-filter">
+            <div class="app-header-inner">
+              <mat-form-field class="app-header-filter" (click)="$event.stopPropagation()">
+                <mat-select [(ngModel)]="userFilter" (ngModelChange)="filter('username', userFilter)" panelClass="app-panel-table-header" [placeholder]="'desc.filterByUser' | translate">
+                  <mat-option *ngFor="let u of users" [value]="u.id">{{ u.username }}</mat-option>
+                </mat-select>
+                <button mat-icon-button matIconSuffix color="warn" *ngIf="userFilter" (click)="filter('username', null); userFilter = null; $event.stopPropagation();"><mat-icon>clear</mat-icon></button>
+              </mat-form-field>
+              <div class="app-header-title">
+                <span>{{ 'desc.editedBy' | translate }}</span>
+              </div>
+            </div>
+          </th>
+          <td mat-cell *matCellDef="let element" (click)="filterByUsername(element.username); $event.stopPropagation();">{{ element.username }}</td>
         </ng-container>
+
         <ng-container matColumnDef="version">
-          <th mat-header-cell *matHeaderCellDef mat-sort-header>{{ 'desc.version' | translate }}</th>
+          <th mat-header-cell *matHeaderCellDef class="app-header-cell-with-filter">
+            <div class="app-header-inner">
+              <div class="app-header-title">
+                <span mat-sort-header="version">{{ 'desc.version' | translate }}</span>
+              </div>
+            </div>
+          </th>
           <td mat-cell *matCellDef="let element">{{ element.version }}</td>
         </ng-container>
 
-        <ng-container matColumnDef="state-filter">
-          <th mat-header-cell *matHeaderCellDef>
-            <mat-form-field>
-              <mat-select [(ngModel)]="stateFilter" (ngModelChange)="filter('state', stateFilter)" panelClass="app-panel-table-header" [placeholder]="'desc.filterByState' | translate">
-                <mat-option *ngFor="let s of states" [value]="s">{{ 'versionState.' + s | translate }}</mat-option>
-              </mat-select>
-              <button mat-icon-button matIconSuffix color="warn" *ngIf="stateFilter" (click)="filter('state', ''); stateFilter = ''; $event.stopPropagation();"><mat-icon>clear</mat-icon></button>
-            </mat-form-field>
+        <ng-container matColumnDef="updatedAt">
+          <th mat-header-cell *matHeaderCellDef class="app-header-cell-with-filter">
+            <div class="app-header-inner">
+              <mat-form-field class="app-header-filter" (click)="$event.stopPropagation()">
+                <input matInput [matDatepicker]="picker" [formControl]="updatedAfterFilter" (dateChange)="updatedAfterChanged($event, updatedAfterFilter)" [placeholder]="'desc.filterByUpdatedAt' | translate">
+                <button mat-icon-button matIconSuffix color="warn" *ngIf="updatedAfterFilter.value" (click)="updatedAfterFilter.setValue(null); filter('updatedAfter', '')"><mat-icon>clear</mat-icon></button>
+                <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
+                <mat-datepicker #picker></mat-datepicker>
+              </mat-form-field>
+              <div class="app-header-title">
+                <span mat-sort-header="updatedAt">{{ 'desc.updatedAt' | translate }}</span>
+              </div>
+            </div>
           </th>
+          <td mat-cell *matCellDef="let element">{{ element.updatedAt | appDateTime }}</td>
         </ng-container>
+
         <ng-container matColumnDef="state">
-          <th mat-header-cell *matHeaderCellDef mat-sort-header>{{ 'desc.state' | translate }}</th>
+          <th mat-header-cell *matHeaderCellDef class="app-header-cell-with-filter">
+            <div class="app-header-inner">
+              <mat-form-field class="app-header-filter" (click)="$event.stopPropagation()">
+                <mat-select [(ngModel)]="stateFilter" (ngModelChange)="filter('state', stateFilter)" panelClass="app-panel-table-header" [placeholder]="'desc.filterByState' | translate">
+                  <mat-option *ngFor="let s of states" [value]="s">{{ 'versionState.' + s | translate }}</mat-option>
+                </mat-select>
+                <button mat-icon-button matIconSuffix color="warn" *ngIf="stateFilter" (click)="filter('state', ''); stateFilter = ''; $event.stopPropagation();"><mat-icon>clear</mat-icon></button>
+              </mat-form-field>
+              <div class="app-header-title">
+                <span>{{ 'desc.state' | translate }}</span>
+              </div>
+            </div>
+          </th>
           <td mat-cell *matCellDef="let element" (click)="stateFilter = element.state; filter('state', element.state); $event.stopPropagation();">
             <span class="app-badge" [ngClass]="'app-' + element.state">{{ 'versionState.' + element.state | translate }}</span>
           </td>
         </ng-container>
 
-        <ng-container matColumnDef="pid-filter">
-          <th mat-header-cell *matHeaderCellDef>
-            <mat-form-field>
-              <input matInput type="text" id="pidFilter" [(ngModel)]="pidFilter" (change)="filter('pid', pidFilter)" [placeholder]="'desc.filterByPid' | translate">
-              <button mat-icon-button matIconSuffix color="warn" *ngIf="pidFilter" (click)="filter('pid', ''); pidFilter = ''"><mat-icon>clear</mat-icon></button>
-            </mat-form-field>
-          </th>
-        </ng-container>
         <ng-container matColumnDef="pid">
-          <th mat-header-cell *matHeaderCellDef>{{ 'desc.pid' | translate }}</th>
+          <th mat-header-cell *matHeaderCellDef class="app-header-cell-with-filter">
+            <div class="app-header-inner">
+              <mat-form-field class="app-header-filter" (click)="$event.stopPropagation()">
+                <input matInput type="text" id="pidFilter" [(ngModel)]="pidFilter" (change)="filter('pid', pidFilter)" [placeholder]="'desc.filterByPid' | translate">
+                <button mat-icon-button matIconSuffix color="warn" *ngIf="pidFilter" (click)="filter('pid', ''); pidFilter = ''"><mat-icon>clear</mat-icon></button>
+              </mat-form-field>
+              <div class="app-header-title">{{ 'desc.pid' | translate }}</div>
+            </div>
+          </th>
           <td mat-cell *matCellDef="let element">{{ element.pid }}</td>
         </ng-container>
 
-        <ng-container matColumnDef="username-filter">
-          <th mat-header-cell *matHeaderCellDef>
-            <mat-form-field>
-              <mat-select [(ngModel)]="userFilter" (ngModelChange)="filter('username', userFilter)" panelClass="app-panel-table-header" [placeholder]="'desc.filterByUser' | translate">
-                <mat-option *ngFor="let u of users" [value]="u.id">{{ u.username }}</mat-option>
-              </mat-select>
-              <button mat-icon-button matIconSuffix color="warn" *ngIf="userFilter" (click)="filter('username', null); userFilter = null; $event.stopPropagation();"><mat-icon>clear</mat-icon></button>
-            </mat-form-field>
-          </th>
-        </ng-container>
-        <ng-container matColumnDef="username">
-          <th mat-header-cell *matHeaderCellDef mat-sort-header>{{ 'desc.editedBy' | translate }}</th>
-          <td mat-cell *matCellDef="let element" (click)="filterByUsername(element.username); $event.stopPropagation();">{{ element.username }}</td>
-        </ng-container>
-
-        <ng-container matColumnDef="actions-filter">
-          <th mat-header-cell *matHeaderCellDef></th>
-        </ng-container>
         <ng-container matColumnDef="actions">
           <th mat-header-cell *matHeaderCellDef></th>
           <td mat-cell *matCellDef="let element" (click)="$event.stopPropagation()" class="app-actions-cell">
@@ -142,7 +163,6 @@
           </td>
         </ng-container>
 
-        <tr mat-header-row *matHeaderRowDef="filterColumns; sticky: false"></tr>
         <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
         <tr mat-row *matRowDef="let row; columns: displayedColumns;" [routerLink]="['/revision', row.pid, row.version]" class="app-cursor-pointer" (click)="navigate(row)"></tr>
       </table>

@@ -301,6 +301,23 @@ export class AppService {
     );
   }
 
+  // Plan process of accepting ALTO versions of all objects in the hierarchy
+  // specified by the PID from the given engine.
+  planAcceptEngineVersions(
+    pid: string,
+    engine: string,
+    priority?: BatchPriority,
+  ): Observable<any> {
+    const params = new HttpParams();
+    if (priority != null) {
+      params.set('priority', priority);
+    }
+    return this.post(
+      `/hierarchy/${pid}/accept-engine-versions/${engine}`,
+      params,
+    );
+  }
+
   planReindex(priority: BatchPriority): Observable<any> {
     return this.post(`/system/reindex?priority=${priority}`, null);
   }

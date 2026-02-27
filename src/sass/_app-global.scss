@@ -881,10 +881,74 @@ as-split {
   }
 }
 
-// -- new --
-.app-table-paginator {
+// Table with sticky header + paginator: scroll container must shrink in flex layout
+.app-table-scroll {
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.app-table-scroll-inner {
+  flex: 1 1 0;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+// Sticky table header: solid background and z-index so it stays on top when scrolling
+.app-table-scroll-inner .mat-mdc-table .mat-mdc-header-row {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background-color: $app-body-bg;
+  box-shadow: 0 1px 0 0 $app-default-border-color;
+
+  .mat-mdc-header-cell {
+    background-color: $app-body-bg;
+  }
+}
+
+// Sticky paginator: at bottom of scroll area with solid background
+.app-table-scroll-inner .app-table-paginator,
+.app-table-scroll-inner .mat-paginator.app-table-paginator {
   position: sticky;
   bottom: 0;
+  z-index: 2;
+  background-color: $app-body-bg;
+  box-shadow: 0 -1px 0 0 $app-default-border-color;
+}
+
+// Table header cell: filter above title in same cell, left-aligned (reusable)
+.mat-mdc-table .mat-mdc-header-row .app-header-cell-with-filter {
+  vertical-align: bottom;
+
+  .app-header-inner {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .app-header-title {
+    font-weight: 500;
+    margin-top: 8px;
+    display: flex;
+    align-items: center;
+    gap: 2px;
+
+    span[mat-sort-header] {
+      display: inline-flex;
+      align-items: center;
+      cursor: pointer;
+    }
+  }
+
+  .app-header-filter {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .app-header-filter .mat-mdc-form-field {
+    width: 100%;
+  }
 }
 
 .mat-mdc-snack-bar-container {
@@ -893,4 +957,8 @@ as-split {
     --mat-mdc-snack-bar-button-color: #fff;
     --mdc-snackbar-supporting-text-color: #fff;
   }
+}
+
+.app-nowrap {
+  white-space: nowrap;
 }

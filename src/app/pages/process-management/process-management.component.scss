@@ -1,1 +1,27 @@
+.app-state-cell {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
 
+.app-progress-gauge-wrapper {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.app-progress-gauge {
+  width: 20px;
+  height: 20px;
+  transform: rotate(-90deg);
+}
+
+.app-progress-gauge-bg {
+  stroke: #9e9e9e;
+}
+
+.app-progress-gauge-fill {
+  stroke: #616161;
+  transition: stroke-dashoffset 0.2s ease;
+}

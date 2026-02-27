@@ -19,7 +19,6 @@ import { OcrEditorComponent } from 'src/app/components/ocr-editor/ocr-editor.com
 import { ViewerComponent } from 'src/app/components/viewer/viewer.component';
 import { FormsModule } from '@angular/forms';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
-import { Storage } from 'src/app/shared/constants';
 import { SearchResults } from 'src/app/shared/search-results';
 import { AltoVersion, AltoVersionContent } from 'src/app/shared/alto-version';
 import { RevisionListStateService } from 'src/app/shared/revision-list-state.service';
@@ -29,6 +28,7 @@ import {
 } from 'src/app/components/plan-process-dialog/plan-process-dialog.component';
 import { UserInfo } from 'src/app/shared/user-info';
 import { BatchPriority } from 'src/app/shared/batch';
+import { AppDateTimePipe } from 'src/app/shared/app-date-time.pipe';
 
 @Component({
   selector: 'app-revision-detail',
@@ -49,6 +49,7 @@ import { BatchPriority } from 'src/app/shared/batch';
     MatTableModule,
     MatTooltipModule,
     HighlightModule,
+    AppDateTimePipe,
   ],
   templateUrl: './revision-detail.component.html',
   styleUrls: ['./revision-detail.component.scss'],
@@ -89,18 +90,16 @@ export class RevisionDetailComponent {
   ) {}
 
   ngOnInit() {
-    this.hor_size = localStorage.getItem(Storage.REVIZE_SIZE_HOR)
-      ? parseInt(localStorage.getItem(Storage.REVIZE_SIZE_HOR))
+    this.hor_size = localStorage.getItem('revize_hor')
+      ? parseInt(localStorage.getItem('revize_hor'))
       : 50;
 
-    this.top_left_size = localStorage.getItem(Storage.REVIZE_SIZE_TOP_LEFT)
-      ? parseInt(localStorage.getItem(Storage.REVIZE_SIZE_TOP_LEFT))
+    this.top_left_size = localStorage.getItem('revize_tl')
+      ? parseInt(localStorage.getItem('revize_tl'))
       : 50;
 
-    this.bottom_left_size = localStorage.getItem(
-      Storage.REVIZE_SIZE_BOTTOM_LEFT,
-    )
-      ? parseInt(localStorage.getItem(Storage.REVIZE_SIZE_BOTTOM_LEFT))
+    this.bottom_left_size = localStorage.getItem('revize_bl')
+      ? parseInt(localStorage.getItem('revize_bl'))
       : 50;
 
     this.route.params.subscribe((params) => {
@@ -108,6 +107,9 @@ export class RevisionDetailComponent {
       const v = params['version'];
       const ver = v != null ? parseInt(v, 10) : NaN;
       this.version = !isNaN(ver) ? ver : null;
+
+      this.clearVersionOcrState();
+
       const items = this.revisionListState.items;
       if (items.length && this.pid) {
         const idx =
@@ -127,16 +129,30 @@ export class RevisionDetailComponent {
   }
 
   asDragEndHor(e: any) {
-    localStorage.setItem(Storage.REVIZE_SIZE_HOR, String(e.sizes[0]));
+    localStorage.setItem('revize_hor', String(e.sizes[0]));
   }
 
   asDragEndTop(e: any) {
-    localStorage.setItem(Storage.REVIZE_SIZE_TOP_LEFT, String(e.sizes[0]));
+    localStorage.setItem('revize_tl', String(e.sizes[0]));
   }
 
   asDragEndBottom(e: any) {
-    localStorage.setItem(Storage.REVIZE_SIZE_BOTTOM_LEFT, String(e.sizes[0]));
+    localStorage.setItem('revize_bl', String(e.sizes[0]));
     this.viewerWidth = e.sizes[0];
+  }
+
+  /** Clear OCR/version state so we don't show stale content when navigating to empty pages. */
+  private clearVersionOcrState(): void {
+    this.selectedVersion = null;
+    this.selectedVersionAlto = null;
+    this.selectedVersionOcr = null;
+    this.activeVersion = null;
+    this.activeVersionAlto = null;
+    this.activeVersionOcr = null;
+    this.state.altoXml = null;
+    this.state.alto = null;
+    this.state.printSpace = null;
+    this.state.clearSelection();
   }
 
   getVersions() {
@@ -159,32 +175,53 @@ export class RevisionDetailComponent {
 
   getSelectedVersion() {
     if (this.pid == null || this.version == null) return;
-    this.service
-      .fetchAltoVersion(this.pid, this.version)
-      .subscribe((res: AltoVersionContent) => {
+    const pid = this.pid;
+    const version = this.version;
+    this.service.fetchAltoVersion(pid, version).subscribe({
+      next: (res: AltoVersionContent) => {
+        if (this.pid !== pid || this.version !== version) return; // stale
         this.selectedVersion = res;
         this.selectedVersionAlto = prettifyXml(base64ToUtf8(res.content));
         this.selectedVersionOcr = this.state.setPrintSpace(
           xml2js(this.selectedVersionAlto),
         );
-        // Sync to state so editing, setArea and viewer selection use the same data
         this.state.altoXml = this.selectedVersionAlto;
         this.state.alto = xml2js(this.selectedVersionAlto);
         this.state.printSpace = this.selectedVersionOcr;
         this.state.clearSelection();
-      });
+      },
+      error: () => {
+        if (this.pid !== pid || this.version !== version) return;
+        this.selectedVersion = null;
+        this.selectedVersionAlto = null;
+        this.selectedVersionOcr = null;
+        this.state.altoXml = null;
+        this.state.alto = null;
+        this.state.printSpace = null;
+        this.state.clearSelection();
+      },
+    });
   }
 
   getActiveVersion() {
-    this.service
-      .fetchActiveAltoVersion(this.pid)
-      .subscribe((res: AltoVersionContent) => {
+    if (this.pid == null) return;
+    const pid = this.pid;
+    this.service.fetchActiveAltoVersion(pid).subscribe({
+      next: (res: AltoVersionContent) => {
+        if (this.pid !== pid) return; // stale
         this.activeVersion = res;
         this.activeVersionAlto = prettifyXml(base64ToUtf8(res.content));
         this.activeVersionOcr = this.state.setPrintSpace(
           xml2js(this.activeVersionAlto),
         );
-      });
+      },
+      error: () => {
+        if (this.pid !== pid) return;
+        this.activeVersion = null;
+        this.activeVersionAlto = null;
+        this.activeVersionOcr = null;
+      },
+    });
   }
 
   selectVersion(version: number) {

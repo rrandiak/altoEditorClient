@@ -16,7 +16,6 @@ import { base64ToUtf8, prettifyXml, utf8ToBase64 } from 'src/app/shared/utils';
 
 import { js2xml, xml2js } from 'xml-js';
 import { OcrEditorComponent } from 'src/app/components/ocr-editor/ocr-editor.component';
-import { BATCH_PRIORITIES } from 'src/app/shared/constants';
 import { HighlightModule } from 'ngx-highlightjs';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
@@ -76,7 +75,7 @@ export class EditingComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    this.priorities = Object.values(BATCH_PRIORITIES);
+    this.priorities = Object.values(BatchPriority);
     this.route.paramMap.subscribe((params: any) => {
       this.pid = params.get('pid');
 
@@ -140,7 +139,6 @@ export class EditingComponent implements OnInit {
 
   setSelectedArea(t: any) {
     this.selection = t;
-    // console.log(this.alto)
     const tBlocks: XmlJsElement[] = this.state.printSpace.elements;
 
     this.state.clearSelection();
@@ -235,10 +233,10 @@ export class EditingComponent implements OnInit {
 
   save() {
     const altoContent = utf8ToBase64(js2xml(this.state.alto));
-    this.service.saveAltoVersion(this.pid, altoContent).subscribe((res) => {
-      this.service.showSnackBar(
-        res?.content ? res.content : 'desc.savedSuccess',
-      );
+    this.service.saveAltoVersion(this.pid, altoContent).subscribe({
+      next: (res) => {
+        this.service.showSnackBar('message.altoVersionSaved');
+      },
     });
   }
 
@@ -261,15 +259,13 @@ export class EditingComponent implements OnInit {
   generateWithEngine(engine: UserInfo, priority: BatchPriority): void {
     this.service
       .generateAlto(this.pid, engine.username, priority, this.config.instance)
-      .subscribe((res) => {
-        // TODO: handle response
-        if (res?.errors?.length) {
-          this.service.showSnackBar(res.errors[0], true);
-        } else {
-          this.service.showSnackBar(
-            res?.content ? res.content : 'desc.PEROExists',
-          );
-        }
+      .subscribe({
+        next: () => {
+          this.service.showSnackBar('message.altoVersionGenerationPlanned');
+        },
+        error: (err) => {
+          this.service.showSnackBar(err.error.message, true);
+        },
       });
   }
 

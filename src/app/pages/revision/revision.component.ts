@@ -37,6 +37,7 @@ import {
   ConfirmDialogComponent,
   ConfirmDialogData,
 } from 'src/app/components/confirm-dialog/confirm-dialog.component';
+import { AppDateTimePipe } from 'src/app/shared/app-date-time.pipe';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 
 @Component({
@@ -65,6 +66,7 @@ import { MatDialog, MatDialogModule } from '@angular/material/dialog';
     MatNativeDateModule,
     MatCheckboxModule,
     MatDialogModule,
+    AppDateTimePipe,
   ],
   templateUrl: './revision.component.html',
   styleUrls: ['./revision.component.scss'],
@@ -73,6 +75,7 @@ export class RevisionComponent {
   displayedColumns: string[] = [
     'select',
     'label',
+    'pageIndex',
     'username',
     'version',
     'updatedAt',
@@ -80,7 +83,6 @@ export class RevisionComponent {
     'pid',
     'actions',
   ];
-  filterColumns: string[] = [];
 
   labelFilter = '';
   userFilter: number | null = null;
@@ -116,9 +118,6 @@ export class RevisionComponent {
 
   ngOnInit(): void {
     this._adapter.setLocale(this._locale);
-    this.displayedColumns.forEach((c) => {
-      this.filterColumns.push(c + '-filter');
-    });
     this.applyFiltersFromQueryParams();
     this.service
       .fetchUsers({ page: 0, size: 1000 })
@@ -151,6 +150,10 @@ export class RevisionComponent {
       const p = parseInt(page, 10);
       if (!isNaN(p) && p >= 0) this.pageIndex = p;
     }
+    const sortBy = q.get('sortBy');
+    if (sortBy) this.sortBy = sortBy;
+    const sortOrder = q.get('sortOrder');
+    if (sortOrder === 'asc' || sortOrder === 'desc') this.orderSort = sortOrder;
     const size = q.get('size');
     if (size) {
       const s = parseInt(size, 10);
@@ -164,7 +167,7 @@ export class RevisionComponent {
       // instance: this.config.instance,
       offset,
       limit: this.pageSize,
-      sortBy: this.sortBy,
+      sortBy: this.sortBy === 'label' ? 'title_sort' : this.sortBy,
       sortOrder: this.orderSort === 'asc' ? 'ASC' : 'DESC',
     };
     if (this.labelFilter?.trim()) {
@@ -289,7 +292,10 @@ export class RevisionComponent {
     return this.revisions.filter((r) => this.selectedRevisionIds.has(r.id));
   }
   isAllSelected(): boolean {
-    return this.revisions.length > 0 && this.revisions.every((r) => this.selectedRevisionIds.has(r.id));
+    return (
+      this.revisions.length > 0 &&
+      this.revisions.every((r) => this.selectedRevisionIds.has(r.id))
+    );
   }
   toggleAllSelection(_event?: unknown): void {
     if (this.isAllSelected()) {
@@ -306,7 +312,9 @@ export class RevisionComponent {
   }
   /** Selected versions eligible for Reject/Archive (PENDING only) */
   get rejectArchiveEligibleCount(): number {
-    return this.selectedRevisions.filter((r) => r.state === AltoVersionState.PENDING).length;
+    return this.selectedRevisions.filter(
+      (r) => r.state === AltoVersionState.PENDING,
+    ).length;
   }
 
   batchAccept(): void {
@@ -327,7 +335,9 @@ export class RevisionComponent {
       });
   }
   batchReject(): void {
-    const items = this.selectedRevisions.filter((r) => r.state === AltoVersionState.PENDING);
+    const items = this.selectedRevisions.filter(
+      (r) => r.state === AltoVersionState.PENDING,
+    );
     if (items.length === 0) return;
     this.dialog
       .open(ConfirmDialogComponent, {
@@ -344,7 +354,9 @@ export class RevisionComponent {
       });
   }
   batchArchive(): void {
-    const items = this.selectedRevisions.filter((r) => r.state === AltoVersionState.PENDING);
+    const items = this.selectedRevisions.filter(
+      (r) => r.state === AltoVersionState.PENDING,
+    );
     if (items.length === 0) return;
     this.dialog
       .open(ConfirmDialogComponent, {
@@ -381,7 +393,10 @@ export class RevisionComponent {
         },
         error: (err) => {
           this.batchProgress = null;
-          this.service.showSnackBar(err?.error?.errors?.[0] ?? 'message.error', true);
+          this.service.showSnackBar(
+            err?.error?.errors?.[0] ?? 'message.error',
+            true,
+          );
         },
       });
     };
@@ -407,7 +422,10 @@ export class RevisionComponent {
         },
         error: (err) => {
           this.batchProgress = null;
-          this.service.showSnackBar(err?.error?.errors?.[0] ?? 'message.error', true);
+          this.service.showSnackBar(
+            err?.error?.errors?.[0] ?? 'message.error',
+            true,
+          );
         },
       });
     };
@@ -433,7 +451,10 @@ export class RevisionComponent {
         },
         error: (err) => {
           this.batchProgress = null;
-          this.service.showSnackBar(err?.error?.errors?.[0] ?? 'message.error', true);
+          this.service.showSnackBar(
+            err?.error?.errors?.[0] ?? 'message.error',
+            true,
+          );
         },
       });
     };

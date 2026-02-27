@@ -6,138 +6,170 @@
       <span class="app-last">{{ 'navbar.processManagement' | translate }}</span>
     </div>
     <div class="app-h-100">
-      
+
     </div>
   </div>
-  <div class="app-content-wrapper app-fxFlex app-oh app-oa-y">
-    <div class="app-p-2 app-h-100 app-border-wrapper">
-      <table mat-table [dataSource]="batches" class="app-w-100 app-striped app-hover" matSort (matSortChange)="onSortChange($event)">
+  <div class="app-content-wrapper app-table-scroll app-fxFlex app-oh">
+    <div class="app-table-scroll-inner app-p-2 app-border-wrapper">
+      <table mat-table [dataSource]="batches" class="app-w-100 app-striped app-hover"
+        matSort
+        [matSortActive]="sortBy"
+        [matSortDirection]="orderSort"
+        [matSortDisableClear]="true"
+        (matSortChange)="onSortChange($event)">
 
-        <ng-container matColumnDef="id-filter">
-          <th mat-header-cell *matHeaderCellDef></th>
+        <ng-container matColumnDef="createdBy">
+          <th mat-header-cell *matHeaderCellDef class="app-header-cell-with-filter">
+            <div class="app-header-inner">
+              <div class="app-header-title">
+                <span>{{ 'desc.createdBy' | translate }}</span>
+              </div>
+            </div>
+          </th>
+          <td mat-cell *matCellDef="let element">{{ element.createdBy }}</td>
         </ng-container>
-        <ng-container matColumnDef="id">
-          <th mat-header-cell *matHeaderCellDef>{{ 'desc.id' | translate }}</th>
-          <td mat-cell *matCellDef="let element">{{ element.id }}</td>
+
+        <ng-container matColumnDef="type">
+          <th mat-header-cell *matHeaderCellDef class="app-header-cell-with-filter">
+            <div class="app-header-inner">
+              <mat-form-field class="app-header-filter" (click)="$event.stopPropagation()">
+                <mat-select [(ngModel)]="filters.type" (ngModelChange)="filter('type', filters.type)" panelClass="app-panel-table-header" [placeholder]="'desc.filterByType' | translate">
+                  <mat-option *ngFor="let t of types" [value]="t">{{ 'processType.' + t | translate }}</mat-option>
+                </mat-select>
+                <button mat-icon-button matIconSuffix color="warn" *ngIf="filters.type" (click)="filter('type', ''); $event.stopPropagation()"><mat-icon>clear</mat-icon></button>
+              </mat-form-field>
+              <div class="app-header-title">
+                <span>{{ 'desc.type' | translate }}</span>
+              </div>
+            </div>
+          </th>
+          <td mat-cell *matCellDef="let element" class="app-nowrap">
+            <ng-container *ngIf="element.type">
+              {{ 'processType.' + element.type | translate }}
+            </ng-container>
+          </td>
         </ng-container>
-      
-        <ng-container matColumnDef="pid-filter">
-          <th mat-header-cell *matHeaderCellDef>
-            <mat-form-field >
-              <input matInput type="text" id="pidFilter" [(ngModel)]="filters.pid" (change)="filter('pid', filters.pid)" [placeholder]="'desc.filterByPid' | translate">
-              <button mat-icon-button matIconSuffix color="warn" *ngIf="filters.pid" (click)="filter('pid', '')"><mat-icon>clear</mat-icon></button>
-            </mat-form-field>
-           </th>
+
+        <ng-container matColumnDef="instance">
+          <th mat-header-cell *matHeaderCellDef class="app-header-cell-with-filter">
+            <div class="app-header-inner">
+              <div class="app-header-filter-spacer"></div>
+              <div class="app-header-title">
+                <span>{{ 'desc.instance' | translate }}</span>
+              </div>
+            </div>
+          </th>
+          <td mat-cell *matCellDef="let element">{{ element.instance }}</td>
         </ng-container>
+
         <ng-container matColumnDef="pid">
-          <th mat-header-cell *matHeaderCellDef>{{ 'desc.pid' | translate }}</th>
+          <th mat-header-cell *matHeaderCellDef class="app-header-cell-with-filter">
+            <div class="app-header-inner">
+              <mat-form-field class="app-header-filter" (click)="$event.stopPropagation()">
+                <input matInput type="text" id="pidFilter" [(ngModel)]="filters.pid" (change)="filter('pid', filters.pid)" [placeholder]="'desc.filterByPid' | translate">
+                <button mat-icon-button matIconSuffix color="warn" *ngIf="filters.pid" (click)="filter('pid', '')"><mat-icon>clear</mat-icon></button>
+              </mat-form-field>
+              <div class="app-header-title">{{ 'desc.pid' | translate }}</div>
+            </div>
+          </th>
           <td mat-cell *matCellDef="let element">{{ element.pid }}</td>
         </ng-container>
-  
-        <ng-container matColumnDef="createdAt-filter">
-          <th mat-header-cell *matHeaderCellDef>
-            <mat-form-field>
-              <input matInput [matDatepicker]="pickerCreated" [formControl]="dateFormControls.createdAfter" (dateChange)="filterDate('createdAfter', dateFormControls.createdAfter, false)" [placeholder]="'desc.filterByCreatedAt' | translate">
-              <button mat-icon-button matIconSuffix color="warn" *ngIf="dateFormControls.createdAfter.value" (click)="filterDate('createdAfter', null, false)"><mat-icon>clear</mat-icon></button>
-              <mat-datepicker-toggle matIconSuffix [for]="pickerCreated"></mat-datepicker-toggle>
-              <mat-datepicker #pickerCreated></mat-datepicker>
-            </mat-form-field>
+
+        <ng-container matColumnDef="engine">
+          <th mat-header-cell *matHeaderCellDef class="app-header-cell-with-filter">
+            <div class="app-header-inner">
+              <div class="app-header-title">{{ 'desc.engine' | translate }}</div>
+            </div>
           </th>
-        </ng-container>
-        <ng-container matColumnDef="createdAt">
-          <th mat-header-cell *matHeaderCellDef mat-sort-header>{{ 'desc.createdAt' | translate }}</th>
-          <td mat-cell *matCellDef="let element">{{ element.createdAt | date : 'dd.MM.yyyy HH:mm:ss' }}</td>
-        </ng-container>
-  
-        <ng-container matColumnDef="updatedAt-filter">
-          <th mat-header-cell *matHeaderCellDef>
-            <mat-form-field>
-              <input matInput [matDatepicker]="pickerUpdated" [formControl]="dateFormControls.updatedAfter" (dateChange)="filterDate('updatedAfter', dateFormControls.updatedAfter, false)" [placeholder]="'desc.filterByUpdatedAt' | translate">
-              <button mat-icon-button matIconSuffix color="warn" *ngIf="dateFormControls.updatedAfter.value" (click)="filterDate('updatedAfter', null, false)"><mat-icon>clear</mat-icon></button>
-              <mat-datepicker-toggle matIconSuffix [for]="pickerUpdated"></mat-datepicker-toggle>
-              <mat-datepicker #pickerUpdated></mat-datepicker>
-            </mat-form-field>
-          </th>
-        </ng-container>
-        <ng-container matColumnDef="updatedAt">
-          <th mat-header-cell *matHeaderCellDef mat-sort-header>{{ 'desc.updatedAt' | translate }}</th>
-          <td mat-cell *matCellDef="let element">{{ element.updatedAt | date : 'dd.MM.yyyy HH:mm:ss' }}</td>
-        </ng-container>
-  
-        <ng-container matColumnDef="state-filter">
-          <th mat-header-cell *matHeaderCellDef>
-            <mat-form-field>
-              <mat-select [(ngModel)]="filters.state" (ngModelChange)="filter('state', filters.state)" panelClass="app-panel-table-header" [placeholder]="'desc.filterByState' | translate">
-                <mat-option *ngFor="let s of states" [value]="s">{{ 'processState.' + s | translate }}</mat-option>
-              </mat-select>
-              <button mat-icon-button matIconSuffix color="warn" *ngIf="filters.state" (click)="filter('state', ''); $event.stopPropagation()"><mat-icon>clear</mat-icon></button>
-            </mat-form-field>
-          </th>
-        </ng-container>
-        <ng-container matColumnDef="state">
-          <th mat-header-cell *matHeaderCellDef mat-sort-header>{{ 'desc.state' | translate }}</th>
-          <td mat-cell *matCellDef="let element" (click)="filter('state', element.state)">
-            <span *ngIf="element.state" class="app-badge" [ngClass]="'app-' + element.state" [matTooltip]="element.log ?? ''">{{ 'processState.' + element.state | translate }}</span>
+          <td mat-cell *matCellDef="let element" class="app-nowrap">
+              <span>{{ element.engine }}</span>
           </td>
         </ng-container>
 
-        <ng-container matColumnDef="substate-filter">
-          <th mat-header-cell *matHeaderCellDef>  </th>
+        <ng-container matColumnDef="createdAt">
+          <th mat-header-cell *matHeaderCellDef class="app-header-cell-with-filter">
+            <div class="app-header-inner">
+              <mat-form-field class="app-header-filter" (click)="$event.stopPropagation()">
+                <input matInput [matDatepicker]="pickerCreated" [formControl]="dateFormControls.createdAfter" (dateChange)="filterDate('createdAfter', dateFormControls.createdAfter, false)" [placeholder]="'desc.filterByCreatedAt' | translate">
+                <button mat-icon-button matIconSuffix color="warn" *ngIf="dateFormControls.createdAfter.value" (click)="filterDate('createdAfter', null, false)"><mat-icon>clear</mat-icon></button>
+                <mat-datepicker-toggle matIconSuffix [for]="pickerCreated"></mat-datepicker-toggle>
+                <mat-datepicker #pickerCreated></mat-datepicker>
+              </mat-form-field>
+              <div class="app-header-title">
+                <span mat-sort-header="createdAt">{{ 'desc.createdAt' | translate }}</span>
+              </div>
+            </div>
+          </th>
+          <td mat-cell *matCellDef="let element">{{ element.createdAt | appDateTime }}</td>
         </ng-container>
-        <ng-container matColumnDef="substate">
-          <th mat-header-cell *matHeaderCellDef mat-sort-header>{{ 'desc.substate' | translate }}</th>
-          <td mat-cell *matCellDef="let element">
-            <span *ngIf="element.substate" class="app-badge" [ngClass]="'app-' + element.substate">{{ 'processSubstate.' + element.substate | translate }}</span>
+
+        <ng-container matColumnDef="updatedAt">
+          <th mat-header-cell *matHeaderCellDef class="app-header-cell-with-filter">
+            <div class="app-header-inner">
+              <mat-form-field class="app-header-filter" (click)="$event.stopPropagation()">
+                <input matInput [matDatepicker]="pickerUpdated" [formControl]="dateFormControls.updatedAfter" (dateChange)="filterDate('updatedAfter', dateFormControls.updatedAfter, false)" [placeholder]="'desc.filterByUpdatedAt' | translate">
+                <button mat-icon-button matIconSuffix color="warn" *ngIf="dateFormControls.updatedAfter.value" (click)="filterDate('updatedAfter', null, false)"><mat-icon>clear</mat-icon></button>
+                <mat-datepicker-toggle matIconSuffix [for]="pickerUpdated"></mat-datepicker-toggle>
+                <mat-datepicker #pickerUpdated></mat-datepicker>
+              </mat-form-field>
+              <div class="app-header-title">
+                <span mat-sort-header="updatedAt">{{ 'desc.updatedAt' | translate }}</span>
+              </div>
+            </div>
+          </th>
+          <td mat-cell *matCellDef="let element">{{ element.updatedAt | appDateTime }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="state">
+          <th mat-header-cell *matHeaderCellDef class="app-header-cell-with-filter">
+            <div class="app-header-inner">
+              <mat-form-field class="app-header-filter" (click)="$event.stopPropagation()">
+                <mat-select [(ngModel)]="filters.state" (ngModelChange)="filter('state', filters.state)" panelClass="app-panel-table-header" [placeholder]="'desc.filterByState' | translate">
+                  <mat-option *ngFor="let s of states" [value]="s">{{ 'processState.' + s | translate }}</mat-option>
+                </mat-select>
+                <button mat-icon-button matIconSuffix color="warn" *ngIf="filters.state" (click)="filter('state', ''); $event.stopPropagation()"><mat-icon>clear</mat-icon></button>
+              </mat-form-field>
+              <div class="app-header-title">
+                <span>{{ 'desc.state' | translate }}</span>
+              </div>
+            </div>
+          </th>
+          <td mat-cell *matCellDef="let element" (click)="filter('state', element.state)">
+            <div class="app-state-cell">
+              <span *ngIf="element.state" class="app-badge" [ngClass]="'app-' + element.state" [matTooltip]="element.log ?? ''">{{ 'processState.' + element.state | translate }}</span>
+              <span *ngIf="element.substate" class="app-badge" [ngClass]="'app-' + element.substate">{{ 'processSubstate.' + element.substate | translate }}</span>
+              <span *ngIf="(element.estimatedItemCount ?? 0) > 0 && getProgressPercent(element) !== null && (element.state === 'RUNNING' || element.state === 'FAILED')" class="app-progress-gauge-wrapper" (click)="$event.stopPropagation()" [matTooltip]="(getProgressPercent(element) | number : '1.2-2') + '%'" matTooltipPosition="above">
+                <svg class="app-progress-gauge" [attr.aria-label]="(getProgressPercent(element) | number : '1.2-2') + '%'" viewBox="0 0 24 24">
+                  <circle class="app-progress-gauge-bg" cx="12" cy="12" r="10" fill="none" stroke-width="2"/>
+                  <circle class="app-progress-gauge-fill" cx="12" cy="12" r="10" fill="none" stroke-width="2"
+                    stroke-dasharray="62.83" [attr.stroke-dashoffset]="62.83 - (getProgressPercent(element)! / 100) * 62.83"/>
+                </svg>
+              </span>
+            </div>
           </td>
         </ng-container>
-  
-        <ng-container matColumnDef="priority-filter">
-          <th mat-header-cell *matHeaderCellDef>
-            <mat-form-field>
-              <mat-select [(ngModel)]="filters.priority" (ngModelChange)="filter('priority', filters.priority)" panelClass="app-panel-table-header" [placeholder]="'desc.filterByPriority' | translate">
-                <mat-option *ngFor="let p of priorities" [value]="p">{{ 'processPriority.' + p | translate }}</mat-option>
-              </mat-select>
-              <button mat-icon-button matIconSuffix color="warn" *ngIf="filters.priority" (click)="filter('priority', ''); $event.stopPropagation()"><mat-icon>clear</mat-icon></button>
-            </mat-form-field>
-          </th>
-        </ng-container>
+
         <ng-container matColumnDef="priority">
-          <th mat-header-cell *matHeaderCellDef mat-sort-header>{{ 'desc.priority' | translate }}</th>
+          <th mat-header-cell *matHeaderCellDef class="app-header-cell-with-filter">
+            <div class="app-header-inner">
+              <mat-form-field class="app-header-filter" (click)="$event.stopPropagation()">
+                <mat-select [(ngModel)]="filters.priority" (ngModelChange)="filter('priority', filters.priority)" panelClass="app-panel-table-header" [placeholder]="'desc.filterByPriority' | translate">
+                  <mat-option *ngFor="let p of priorities" [value]="p">{{ 'processPriority.' + p | translate }}</mat-option>
+                </mat-select>
+                <button mat-icon-button matIconSuffix color="warn" *ngIf="filters.priority" (click)="filter('priority', ''); $event.stopPropagation()"><mat-icon>clear</mat-icon></button>
+              </mat-form-field>
+              <div class="app-header-title">
+                <span>{{ 'desc.priority' | translate }}</span>
+              </div>
+            </div>
+          </th>
           <td mat-cell *matCellDef="let element">
             <ng-container *ngIf="element.priority">
               {{ 'processPriority.' + element.priority | translate }}
             </ng-container>
           </td>
         </ng-container>
-  
-        <ng-container matColumnDef="type-filter">
-          <th mat-header-cell *matHeaderCellDef>
-            <mat-form-field>
-              <mat-select [(ngModel)]="filters.type" (ngModelChange)="filter('type', filters.type)" panelClass="app-panel-table-header" [placeholder]="'desc.filterByType' | translate">
-                <mat-option *ngFor="let t of types" [value]="t">{{ 'processType.' + t | translate }}</mat-option>
-              </mat-select>
-              <button mat-icon-button matIconSuffix color="warn" *ngIf="filters.type" (click)="filter('type', ''); $event.stopPropagation()"><mat-icon>clear</mat-icon></button>
-            </mat-form-field>
-          </th>
-        </ng-container>
-        <ng-container matColumnDef="type">
-          <th mat-header-cell *matHeaderCellDef mat-sort-header>{{ 'desc.type' | translate }}</th>
-          <td mat-cell *matCellDef="let element">
-            <ng-container *ngIf="element.type">
-              {{ 'processType.' + element.type | translate }}
-            </ng-container>
-          </td>
-        </ng-container>
-  
-        <ng-container matColumnDef="instance-filter">
-          <th mat-header-cell *matHeaderCellDef>  </th>
-        </ng-container>
-        <ng-container matColumnDef="instance">
-          <th mat-header-cell *matHeaderCellDef mat-sort-header>{{ 'desc.instance' | translate }}</th>
-          <td mat-cell *matCellDef="let element">{{ element.instance }}</td>
-        </ng-container>
-      
-        <tr mat-header-row *matHeaderRowDef="filterColumns; sticky: false"></tr>
+
         <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
         <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
       </table>

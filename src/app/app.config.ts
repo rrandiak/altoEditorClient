@@ -5,7 +5,14 @@ import { routes } from './app.routes';
 import { TranslateModule, TranslateLoader } from '@ngx-translate/core';
 import { TranslateHttpLoader } from '@ngx-translate/http-loader';
 
-import { HttpClientModule, HttpClient, provideHttpClient, withInterceptorsFromDi, HTTP_INTERCEPTORS } from '@angular/common/http';
+import {
+  HttpClientModule,
+  HttpClient,
+  provideHttpClient,
+  withInterceptorsFromDi,
+  HTTP_INTERCEPTORS,
+} from '@angular/common/http';
+import { DATE_PIPE_DEFAULT_OPTIONS } from '@angular/common';
 
 import { provideAnimations } from '@angular/platform-browser/animations';
 
@@ -15,6 +22,7 @@ import { AppConfiguration } from './app-configuration';
 import { HIGHLIGHT_OPTIONS, HighlightOptions } from 'ngx-highlightjs';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { AuthGuard } from './auth.guard';
+import { CuratorGuard } from './curator.guard';
 import { AuthService } from './auth.service';
 import { AuthInterceptor } from './auth-interceptor';
 
@@ -53,10 +61,17 @@ export const appConfig: ApplicationConfig = {
     provideHttpClient(withInterceptorsFromDi()),
     AppState,
     AuthGuard,
+    CuratorGuard,
     AuthService,
     AppConfiguration,
     HttpClient, AppService,
     { provide: APP_INITIALIZER, useFactory: (config: AppConfiguration) => () => config.load(), deps: [AppConfiguration], multi: true },
+    {
+      provide: DATE_PIPE_DEFAULT_OPTIONS,
+      useValue: {
+        timezone: typeof Intl !== 'undefined' ? Intl.DateTimeFormat().resolvedOptions().timeZone : undefined,
+      },
+    },
     { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true },
     importProvidersFrom(MatSnackBarModule),
   ]

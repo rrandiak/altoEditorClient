@@ -49,6 +49,9 @@
     "pagesCount": "Pages count",
     "pagesWithAlto": "Pages with ALTO",
     "title": "Title",
+    "pageIndex": "Index",
+    "engine": "Engine",
+    "createdBy": "User",
     "version": "Version",
     "type": "Type",
     "instance": "Instance",
@@ -75,6 +78,7 @@
     "backToLocalDocuments": "Back to local documents",
     "generateAlto": "Generate ALTO",
     "fetchFromKramerius": "Fetch from Kramerius",
+    "acceptEngineVersions": "Accept engine versions",
     "viewRevisions": "View revisions",
     "reindex": "Reindex all"
   },
@@ -82,12 +86,14 @@
     "fetchFromKramerius": "Fetch document hierarchy and ALTO versions from Kramerius",
     "generateSinglePageAlto": "Generate ALTO for the selected page using engine {{engine}}",
     "generateForHierarchy": "Generate ALTO for all pages in the selected hierarchy using engine {{engine}}",
+    "acceptEngineVersions": "Accept engine versions for the hierarchy using engine {{engine}}",
     "reindex": "Delete and rebuild all indexes"
   },
   "message": {
     "altoVersionSaved": "ALTO version saved",
     "altoVersionGenerationPlanned": "ALTO version generation planned",
     "hierarchyFetchPlanned": "Document hierarchy fetch planned",
+    "acceptEngineVersionsPlanned": "Accept engine versions planned",
     "reindexPlanned": "Reindex planned",
     "error": "An unknown error occurred",
     "confirmAccept": "Accept {{count}} version(s)?",

@@ -51,8 +51,10 @@ export interface Batch {
   engine: string | null;
   state: BatchState | string;
   substate: BatchSubstate | string | null;
+  createdBy: string;
   createdAt: Date; // ISO 8601
   updatedAt: Date; // ISO 8601
   estimatedItemCount: number | null;
+  processedItemCount: number | null;
   log: string | null;
 }

@@ -20,6 +20,7 @@ import {
   MatNativeDateModule,
 } from '@angular/material/core';
 import { PaginatorI18n } from 'src/app/shared/paginator-i18n';
+import { AppDateTimePipe } from 'src/app/shared/app-date-time.pipe';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -57,6 +58,7 @@ import {
     MatNativeDateModule,
     MatInputModule,
     MatProgressSpinnerModule,
+    AppDateTimePipe,
   ],
   templateUrl: './my-editing.component.html',
   styleUrls: ['./my-editing.component.scss'],
@@ -70,7 +72,8 @@ export class MyEditingComponent {
     'pid',
     'actions',
   ];
-  filterColumns: string[] = [];
+  /** Columns that support sorting (label uses title_sort on backend). */
+  sortByOptions = ['label', 'createdAt', 'updatedAt'] as const;
 
   versions: AltoVersion[] = [];
   loading = true;
@@ -110,9 +113,6 @@ export class MyEditingComponent {
 
   ngOnInit(): void {
     this._adapter.setLocale(this._locale);
-    this.displayedColumns.forEach((c) => {
-      this.filterColumns.push(c + '-filter');
-    });
     this.route.queryParamMap.subscribe((params) => {
       const pid = params.get('pid');
       if (pid?.trim()) {
@@ -131,7 +131,7 @@ export class MyEditingComponent {
       // instance: this.config.instance,
       offset,
       limit: this.pageSize,
-      sortBy: this.sortBy,
+      sortBy: this.sortBy === 'label' ? 'title_sort' : this.sortBy,
       sortOrder: this.orderSort === 'asc' ? 'ASC' : 'DESC',
     };
     if (this.titleFilter?.trim()) {
@@ -180,8 +180,7 @@ export class MyEditingComponent {
 
   onSortChange(e: Sort): void {
     this.sortBy = e.active || 'updatedAt';
-    this.orderSort =
-      e.direction === 'asc' || e.direction === 'desc' ? e.direction : 'desc';
+    this.orderSort = e.direction === 'asc' || e.direction === 'desc' ? e.direction : 'desc';
     this.search();
   }
 
