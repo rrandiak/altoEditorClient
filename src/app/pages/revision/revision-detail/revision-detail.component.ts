@@ -388,6 +388,11 @@ export class RevisionDetailComponent {
     return items.length > 0 && this.revisionListState.searchRequest != null;
   }
 
+  /** ALTO Page WIDTH/HEIGHT for coordinate scaling. */
+  getAltoPageBounds(): { width: number; height: number } | null {
+    return this.state.getAltoPageBounds(this.state.alto);
+  }
+
   get canGoPrev(): boolean {
     if (!this.hasListContext) return false;
     const items = this.revisionListState.items;

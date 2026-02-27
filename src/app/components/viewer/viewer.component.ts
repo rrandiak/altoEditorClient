@@ -45,6 +45,11 @@ export class ViewerComponent {
   }
 
   public _imgW = 100;
+
+  /** ALTO Page WIDTH/HEIGHT define the coordinate space (mm10 or pixels). When set, scale uses these instead of naturalWidth. */
+  @Input() altoPageWidth: number;
+  @Input() altoPageHeight: number;
+
   @Input() set imgW(value: number) {
     this._imgW = value;
     if (this.canvasInited) {
@@ -60,7 +65,11 @@ export class ViewerComponent {
     words: XmlJsElement[];
   }) {
     this._alto = value ?? undefined;
-    if (this.canvasInited && value) {
+    if (
+      this.canvasInited &&
+      value &&
+      (value.blocks?.length || value.lines?.length || value.words?.length)
+    ) {
       this.drawSelectedAlto(value);
     }
   }
@@ -82,7 +91,8 @@ export class ViewerComponent {
   canvasWidth: number;
   canvasHeight: number;
   imageBounds: DOMRect;
-  scale: number;
+  scale = 1;
+  scaleY = 1; // vertical scale when altoPage differs from image aspect
 
   canvasOffset = 0;
   offsetX = 0;
@@ -117,6 +127,13 @@ export class ViewerComponent {
   }
 
   imageUrl: any;
+
+  /** Defer getInfo until layout is complete (image may load before flex layout). */
+  onImageLoad() {
+    setTimeout(() => this.getInfo(), 0);
+    setTimeout(() => this.getInfo(), 100);
+  }
+
   getImg(pid: string) {
     if (!pid) {
       return;
@@ -128,16 +145,24 @@ export class ViewerComponent {
         const b = this.sanitizer.bypassSecurityTrustUrl(
           URL.createObjectURL(resp),
         );
-        // img.src="data:"+mimetype+";base64,"+b64encoded;
         this.imageUrl = b;
       });
   }
 
   getInfo() {
     const img = this.image.nativeElement as HTMLImageElement;
-    this.scale = img.width / img.naturalWidth;
+    if (!img?.naturalWidth) return;
+    // ALTO coords use Page WIDTH/HEIGHT (mm10 or pixels). If provided, scale by displayed size / alto page size.
+    const displayedW = img.width;
+    const displayedH = img.height;
+    if (this.altoPageWidth != null && this.altoPageHeight != null && this.altoPageWidth > 0 && this.altoPageHeight > 0) {
+      this.scale = displayedW / this.altoPageWidth;
+      this.scaleY = displayedH / this.altoPageHeight;
+    } else {
+      this.scale = displayedW / img.naturalWidth;
+      this.scaleY = this.scale;
+    }
     this.imageBounds = img.getBoundingClientRect();
-    // this.initCanvas(img, !this.canvasInited);
     this.initCanvas(img, false);
     this.drawSelectedAlto(this._alto);
   }
@@ -165,9 +190,6 @@ export class ViewerComponent {
       el.addEventListener('mousedown', (e) => {
         this.handleMouseDown(e);
       });
-      // el.addEventListener("mousemove", (e) => {
-      //   this.handleMouseMove(e);
-      // });
       el.addEventListener('mouseup', (e) => {
         this.handleMouseUp(e);
       });
@@ -288,62 +310,105 @@ export class ViewerComponent {
     lines: XmlJsElement[];
     words: XmlJsElement[];
   }) {
-    if (!value) {
+    if (
+      !value?.blocks?.length &&
+      !value?.lines?.length &&
+      !value?.words?.length
+    ) {
+      console.log('no blocks, lines, words');
+      return;
+    }
+    if (
+      !this.autoCanvas?.nativeElement ||
+      !this.canvasWidth ||
+      !this.canvasHeight
+    ) {
+      console.log('no auto canvas, canvas width, canvas height');
       return;
     }
     this.ctxAuto = <CanvasRenderingContext2D>(
       (this.autoCanvas.nativeElement as HTMLCanvasElement).getContext('2d')
     );
+    if (!this.ctxAuto) return;
     this.ctxAuto.clearRect(0, 0, this.canvasWidth, this.canvasHeight);
-    this.drawSelectedBlocks(value.blocks);
-    this.drawSelectedLines(value.lines);
-    this.drawSelectedWords(value.words);
+    if (value.blocks?.length) this.drawSelectedBlocks(value.blocks);
+    if (value.lines?.length) this.drawSelectedLines(value.lines);
+    if (value.words?.length) this.drawSelectedWords(value.words);
 
-    const scrollerBounds = this.scroller.getBoundingClientRect();
-    this.scroller.scrollTop =
-      parseInt(value.words[0].attributes['VPOS']) * this.scale -
-      scrollerBounds.height * 0.5;
-    this.scroller.scrollLeft =
-      parseInt(value.words[0].attributes['HPOS']) * this.scale -
-      scrollerBounds.width * 0.5;
+    if (value.words?.length && this.scroller) {
+      const w = value.words[0];
+      const attrs = w.attributes;
+      if (attrs?.['VPOS'] != null && attrs?.['HPOS'] != null) {
+        const scrollerBounds = this.scroller.getBoundingClientRect();
+        this.scroller.scrollTop =
+          parseFloat(attrs['VPOS']) * this.scaleY -
+          scrollerBounds.height * 0.5;
+        this.scroller.scrollLeft =
+          parseFloat(attrs['HPOS']) * this.scale - scrollerBounds.width * 0.5;
+      }
+    }
   }
 
   drawSelectedBlocks(blocks: XmlJsElement[]) {
+    if (!this.ctxAuto) return;
     this.ctxAuto.strokeStyle = 'red';
     blocks.forEach((b) => {
-      this.ctxAuto.strokeRect(
-        parseInt(b.attributes['HPOS']) * this.scale,
-        parseInt(b.attributes['VPOS']) * this.scale,
-        parseInt(b.attributes['WIDTH']) * this.scale,
-        parseInt(b.attributes['HEIGHT']) * this.scale,
-      );
+      const attrs = b?.attributes;
+      if (
+        attrs?.['HPOS'] != null &&
+        attrs?.['VPOS'] != null &&
+        attrs?.['WIDTH'] != null &&
+        attrs?.['HEIGHT'] != null
+      ) {
+        this.ctxAuto.strokeRect(
+          parseFloat(attrs['HPOS']) * this.scale,
+          parseFloat(attrs['VPOS']) * this.scaleY,
+          parseFloat(attrs['WIDTH']) * this.scale,
+          parseFloat(attrs['HEIGHT']) * this.scaleY,
+        );
+      }
     });
   }
 
   drawSelectedLines(lines: XmlJsElement[]) {
+    if (!this.ctxAuto) return;
     this.ctxAuto.strokeStyle = 'blue';
     lines.forEach((b) => {
-      // this.ctxAuto.strokeRect(b.$.HPOS * this.scale, b.$.VPOS * this.scale, b.$.WIDTH * this.scale, b.$.HEIGHT * this.scale);
-
-      this.ctxAuto.strokeRect(
-        parseInt(b.attributes['HPOS']) * this.scale,
-        parseInt(b.attributes['VPOS']) * this.scale,
-        parseInt(b.attributes['WIDTH']) * this.scale,
-        parseInt(b.attributes['HEIGHT']) * this.scale,
-      );
+      const attrs = b?.attributes;
+      if (
+        attrs?.['HPOS'] != null &&
+        attrs?.['VPOS'] != null &&
+        attrs?.['WIDTH'] != null &&
+        attrs?.['HEIGHT'] != null
+      ) {
+        this.ctxAuto.strokeRect(
+          parseFloat(attrs['HPOS']) * this.scale,
+          parseFloat(attrs['VPOS']) * this.scaleY,
+          parseFloat(attrs['WIDTH']) * this.scale,
+          parseFloat(attrs['HEIGHT']) * this.scaleY,
+        );
+      }
     });
   }
 
   drawSelectedWords(words: XmlJsElement[]) {
+    if (!this.ctxAuto) return;
     this.ctxAuto.fillStyle = 'rgba(255, 255, 0, .3)';
     words.forEach((b) => {
-      // this.ctxAuto.fillRect(b.$.HPOS * this.scale, b.$.VPOS * this.scale, b.$.WIDTH * this.scale, b.$.HEIGHT * this.scale);
-      this.ctxAuto.fillRect(
-        parseInt(b.attributes['HPOS']) * this.scale,
-        parseInt(b.attributes['VPOS']) * this.scale,
-        parseInt(b.attributes['WIDTH']) * this.scale,
-        parseInt(b.attributes['HEIGHT']) * this.scale,
-      );
+      const attrs = b?.attributes;
+      if (
+        attrs?.['HPOS'] != null &&
+        attrs?.['VPOS'] != null &&
+        attrs?.['WIDTH'] != null &&
+        attrs?.['HEIGHT'] != null
+      ) {
+        this.ctxAuto.fillRect(
+          parseFloat(attrs['HPOS']) * this.scale,
+          parseFloat(attrs['VPOS']) * this.scaleY,
+          parseFloat(attrs['WIDTH']) * this.scale,
+          parseFloat(attrs['HEIGHT']) * this.scaleY,
+        );
+      }
     });
   }
 

@@ -114,6 +114,11 @@ export class EditingComponent implements OnInit {
       });
   }
 
+  /** ALTO Page WIDTH/HEIGHT for coordinate scaling. */
+  getAltoPageBounds(): { width: number; height: number } | null {
+    return this.state.getAltoPageBounds(this.state.alto);
+  }
+
   private loadAltoContent(binaryContent: string) {
     const altoXml = base64ToUtf8(binaryContent);
     this.state.altoXml = prettifyXml(altoXml);

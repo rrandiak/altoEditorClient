@@ -29,6 +29,22 @@ export class AppState {
   selectedLines: XmlJsElement[] = [];
   selectedWords: XmlJsElement[] = [];
 
+  /** Get ALTO Page WIDTH/HEIGHT for coordinate scaling (mm10 or pixels). */
+  getAltoPageBounds(alto: any): { width: number; height: number } | null {
+    try {
+      const layout = alto?.elements?.[0]?.elements?.find((e: XmlJsElement) => e.name === 'Layout');
+      const page = layout?.elements?.find((e: XmlJsElement) => e.name === 'Page');
+      const w = page?.attributes?.['WIDTH'];
+      const h = page?.attributes?.['HEIGHT'];
+      if (w != null && h != null) {
+        const nw = parseFloat(String(w));
+        const nh = parseFloat(String(h));
+        return isNaN(nw) || isNaN(nh) ? null : { width: nw, height: nh };
+      }
+    } catch (_) {}
+    return null;
+  }
+
   setPrintSpace(alto: any) {
     return alto.elements[0].elements
       .find((e: XmlJsElement) => e.name === 'Layout')

@@ -20,7 +20,7 @@
             <button mat-icon-button (click)="zoomImgReset()" matTooltip="{{ 'button.zoomReset' | translate }}"><mat-icon>zoom_in_map</mat-icon></button>
           </div>
           <div class="app-fxFlex">
-            <app-viewer *ngIf="pid" [pid]="pid" [selectedAlto]="state.selectedAlto" [scroller]="scroller" [width]="viewerWidth" [imgW]="imgW"></app-viewer>
+            <app-viewer *ngIf="pid" [pid]="pid" [selectedAlto]="state.selectedAlto" [scroller]="scroller" [width]="viewerWidth" [imgW]="imgW" [altoPageWidth]="getAltoPageBounds()?.width" [altoPageHeight]="getAltoPageBounds()?.height"></app-viewer>
           </div>
         </div>
 
