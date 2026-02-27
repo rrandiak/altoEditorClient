@@ -30,6 +30,7 @@ import {
 } from 'src/app/shared/digital-object';
 import { SearchResults } from 'src/app/shared/search-results';
 import { BatchPriority } from 'src/app/shared/batch';
+import { BatchPollingService } from 'src/app/shared/batch-polling.service';
 import {
   PlanProcessDialogComponent,
   PlanProcessDialogData,
@@ -200,6 +201,7 @@ export class DocumentHierarchyComponent implements OnInit {
   }
 
   constructor(
+    private batchPolling: BatchPollingService,
     private route: ActivatedRoute,
     private service: AppService,
     public state: AppState,
@@ -559,11 +561,13 @@ export class DocumentHierarchyComponent implements OnInit {
               this.config.instance,
             )
             .subscribe({
-              next: () =>
+              next: () => {
+                this.batchPolling.triggerCheck();
                 this.service.showSnackBar(
                   'message.altoVersionGenerationPlanned',
                   false,
-                ),
+                );
+              },
               error: (err) =>
                 this.service.showSnackBar(
                   err?.error?.message || 'message.error',
@@ -603,11 +607,13 @@ export class DocumentHierarchyComponent implements OnInit {
                 this.config.instance,
               )
               .subscribe({
-                next: () =>
+                next: () => {
+                  this.batchPolling.triggerCheck();
                   this.service.showSnackBar(
                     'message.altoVersionGenerationPlanned',
                     false,
-                  ),
+                  );
+                },
                 error: (err) =>
                   this.service.showSnackBar(
                     err?.error?.message || 'message.error',
@@ -629,11 +635,13 @@ export class DocumentHierarchyComponent implements OnInit {
     this.service
       .planGenerateForHierarchy(pid, engine.username, priority)
       .subscribe({
-        next: () =>
+        next: () => {
+          this.batchPolling.triggerCheck();
           this.service.showSnackBar(
             'message.altoVersionGenerationPlanned',
             false,
-          ),
+          );
+        },
         error: (err) =>
           this.service.showSnackBar(
             err?.error?.message || 'message.error',
@@ -662,11 +670,13 @@ export class DocumentHierarchyComponent implements OnInit {
           this.service
             .planAcceptEngineVersions(pid, engine.username, result.priority)
             .subscribe({
-              next: () =>
+              next: () => {
+                this.batchPolling.triggerCheck();
                 this.service.showSnackBar(
                   'message.acceptEngineVersionsPlanned',
                   false,
-                ),
+                );
+              },
               error: (err) =>
                 this.service.showSnackBar(
                   err?.error?.message || 'message.error',
@@ -694,8 +704,10 @@ export class DocumentHierarchyComponent implements OnInit {
 
   planFetchDOHierarchy(pid: string, priority: BatchPriority): void {
     this.service.planFetchDOHierarchy(pid, priority).subscribe({
-      next: () =>
-        this.service.showSnackBar('message.hierarchyFetchPlanned', false),
+      next: () => {
+        this.batchPolling.triggerCheck();
+        this.service.showSnackBar('message.hierarchyFetchPlanned', false);
+      },
       error: (err) =>
         this.service.showSnackBar(err?.error?.message || 'message.error', true),
     });
@@ -873,6 +885,7 @@ export class DocumentHierarchyComponent implements OnInit {
     const run = (i: number) => {
       if (i >= pids.length) {
         this.batchProgress = null;
+        this.batchPolling.triggerCheck();
         this.service.showSnackBar('message.altoVersionGenerationPlanned', false);
         this.selectedLocalPids.clear();
         this.selectedBothPids.clear();
@@ -935,6 +948,7 @@ export class DocumentHierarchyComponent implements OnInit {
     const run = (i: number) => {
       if (i >= pids.length) {
         this.batchProgress = null;
+        this.batchPolling.triggerCheck();
         this.service.showSnackBar('message.hierarchyFetchPlanned', false);
         this.selectedLocalPids.clear();
         this.selectedBothPids.clear();
@@ -990,6 +1004,7 @@ export class DocumentHierarchyComponent implements OnInit {
     const run = (i: number) => {
       if (i >= pids.length) {
         this.batchProgress = null;
+        this.batchPolling.triggerCheck();
         this.service.showSnackBar('message.acceptEngineVersionsPlanned', false);
         this.selectedLocalPids.clear();
         this.selectedBothPids.clear();

@@ -32,7 +32,7 @@
           <div class="app-toolbar app-fxLayout app-row app-center-v app-pl-2 app-pr-2">
             <!-- 1. Version + panel mode toggles (start) -->
             <div class="app-toolbar-group app-toolbar-start">
-              <strong class="app-version">{{ panelMode === 'ocr' ? 'OCR' : 'ALTO' }}.{{ state.currentAltoVersion.version }}</strong>
+              <strong class="app-version">{{ panelMode === 'ocr' ? 'OCR' : 'ALTO' }}.{{ state.currentAltoVersion?.version ?? '_' }}</strong>
               <mat-button-toggle-group [(ngModel)]="panelMode" name="panelMode" class="app-panel-mode-toggle">
                 <mat-button-toggle value="ocr" matTooltip="{{ 'button.ocrEditor' | translate }}">
                   <mat-icon>edit_note</mat-icon>

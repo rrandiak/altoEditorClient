@@ -3,27 +3,35 @@
 import { ActivatedRouteSnapshot, CanActivate, Router, RouterStateSnapshot } from '@angular/router';
 import { Observable } from 'rxjs';
 import { Injectable } from '@angular/core';
+import { tap } from 'rxjs/operators';
 import { AuthService } from './auth.service';
 import { AppService } from './app.service';
+import { BatchPollingService } from './shared/batch-polling.service';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
 
-  constructor(private auth: AuthService,
-              private appService: AppService,
-              private router: Router) { }
+  constructor(
+    private auth: AuthService,
+    private appService: AppService,
+    private batchPolling: BatchPollingService,
+    private router: Router,
+  ) {}
 
     canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Observable<boolean>|boolean {
-      //console.log('canActivate');
       return Observable.create((observer: any) => {
         if (this.auth.isAuthorized()) {
-          this.appService.loadSession().subscribe();
+          this.appService.loadSession().pipe(
+            tap(() => this.batchPolling.start()),
+          ).subscribe();
           observer.next(true);
           observer.complete();
         } else {
           this.auth.checkToken((status: number) => {
             if (status == AuthService.AUTH_AUTHORIZED) {
-              this.appService.loadSession().subscribe();
+              this.appService.loadSession().pipe(
+                tap(() => this.batchPolling.start()),
+              ).subscribe();
               observer.next(true);
               observer.complete();
             } else {

@@ -7,10 +7,10 @@ import { Router } from '@angular/router';
 import { AppConfiguration } from './app-configuration';
 import { AppState } from './shared/app.state';
 import { User } from './shared/user.model';
+import { BatchPollingService } from './shared/batch-polling.service';
 
 @Injectable()
 export class AuthService {
-
   static AUTH_AUTHORIZED = 1;
   static AUTH_NOT_AUTHORIZED = 2;
   static AUTH_NOT_LOGGED_IN = 3;
@@ -28,22 +28,25 @@ export class AuthService {
   authorizedGlobalActions: string[];
 
   // specific actions
-  authorizedSpecificActions: any =  {};
+  authorizedSpecificActions: any = {};
 
   constructor(
     private http: HttpClient,
     private settings: AppConfiguration,
     private router: Router,
     private appState: AppState,
+    private batchPolling: BatchPollingService,
   ) {
     AuthService.token = localStorage.getItem('account.token');
-    AuthService.tokenTime = new Date(localStorage.getItem('account.token.time'));
+    AuthService.tokenTime = new Date(
+      localStorage.getItem('account.token.time'),
+    );
     this.loadGlobalAuthorizedActions((status: number) => {
-      console.log("Authorized actions loaded")
+      console.log('Authorized actions loaded');
     });
 
     this.settings.interceptresponse.subscribe((event) => {
-      if (event.type && event.type === "token_expired") {
+      if (event.type && event.type === 'token_expired') {
         AuthService.token = null;
         AuthService.tokenDeadline = null;
         AuthService.tokenCounter = null;
@@ -56,7 +59,7 @@ export class AuthService {
   loadGlobalAuthorizedActions(callback: (arg0: number) => void) {
     this.getAuthorizedActions('uuid:1').subscribe((rAct: RightAction[]) => {
       this.authorizedGlobalActions = [];
-      rAct.forEach(rA => {
+      rAct.forEach((rA) => {
         this.authorizedGlobalActions.push(rA.code);
       });
       callback(AuthService.GLOBAL_ACTIONS_LOADED);
@@ -66,15 +69,13 @@ export class AuthService {
   loadAuthorizedSpecificActions(pid: string, callback: (arg0: number) => void) {
     this.getAuthorizedActions(pid).subscribe((rAct: RightAction[]) => {
       let specActions: any = [];
-      rAct.forEach(rA => {
+      rAct.forEach((rA) => {
         specActions.push(rA.code);
       });
-      this.authorizedSpecificActions[pid]= specActions;
+      this.authorizedSpecificActions[pid] = specActions;
       callback(AuthService.SPECIFIC_ACTIONS_LOADED);
     });
-    
   }
-  
 
   baseUrl(): string {
     return location.origin + this.settings.deployPath;
@@ -84,12 +85,13 @@ export class AuthService {
     const redircetUri = `${this.baseUrl()}/keycloak`;
     let url = `${this.settings.authBaseUrl}/user/auth/login?&redirect_uri=${redircetUri}`;
     if (this.settings.keycloak && this.settings.keycloak['loginType']) {
-      url = url + "&type="+this.settings.keycloak['loginType'];
+      url = url + '&type=' + this.settings.keycloak['loginType'];
     }
     window.open(url, '_top');
   }
 
-  logout(suffix: string = "") {
+  logout(suffix: string = '') {
+    this.batchPolling.stop();
     AuthService.token = null;
     AuthService.tokenTime = null;
     AuthService.tokenDeadline = null;
@@ -116,35 +118,37 @@ export class AuthService {
   }
 
   isAuthorized() {
-    let flag = this.user && this.authorizedGlobalActions && this.authorizedGlobalActions.indexOf('a_admin_read') >=0; 
+    let flag =
+      this.user &&
+      this.authorizedGlobalActions &&
+      this.authorizedGlobalActions.indexOf('a_admin_read') >= 0;
     if (flag) {
-      return this.authorizedGlobalActions.indexOf("a_admin_read") >=0;
-    }  
-    //return true;  
+      return this.authorizedGlobalActions.indexOf('a_admin_read') >= 0;
+    }
+    //return true;
     return false;
   }
 
   // return authorized actions
   getAuthorizedActions(pid: string) {
-    return this.http.get(`${this.settings.authBaseUrl}/user/actions?pid=${pid}`)
-        .pipe(map(response => RightAction.fromJsonArray(response)));
+    return this.http
+      .get(`${this.settings.authBaseUrl}/user/actions?pid=${pid}`)
+      .pipe(map((response) => RightAction.fromJsonArray(response)));
   }
 
-
-  getPidsAuthorizedActions(pids: string[], actions:string[]) {
-
+  getPidsAuthorizedActions(pids: string[], actions: string[]) {
     const payload: any = {
-        pids: pids
+      pids: pids,
     };
 
     if (actions) {
       payload['actions'] = actions;
     }
 
-    return this.http.post(`${this.settings.authBaseUrl}/user/pids_actions`, payload)
-        .pipe(map(response => RightAction.fromPidsMap(response)));
+    return this.http
+      .post(`${this.settings.authBaseUrl}/user/pids_actions`, payload)
+      .pipe(map((response) => RightAction.fromPidsMap(response)));
   }
-
 
   /*
   private validateToken(): Observable<User> {
@@ -152,10 +156,9 @@ export class AuthService {
         .pipe(map(response => User.fromJson(response)));
   }*/
 
-
   getTextProfileImage(): string {
     if (!this.user) {
-        return '?';
+      return '?';
     }
     return (this.user.name || this.user.uid || '?')[0];
   }
@@ -166,55 +169,59 @@ export class AuthService {
       return;
     }
 
-    this.validateToken().subscribe((user: User) => {
-      this.user = user;
-      // load global actions
-      this.loadGlobalAuthorizedActions((status:number)=> {
-        if (this.isAuthorized()) {
-          if (user.session) {
-            // expirace tokenu
-            if (user.session['expires_in'] && AuthService.tokenTime) {
-              let dd:Date =  new Date(AuthService.tokenTime);
-              dd.setSeconds(dd.getSeconds() + parseInt(user.session['expires_in']));
-              AuthService.tokenCounter = parseInt(user.session['expires_in']);
-              AuthService.tokenDeadline = dd;
+    this.validateToken().subscribe(
+      (user: User) => {
+        this.user = user;
+        // load global actions
+        this.loadGlobalAuthorizedActions((status: number) => {
+          if (this.isAuthorized()) {
+            if (user.session) {
+              // expirace tokenu
+              if (user.session['expires_in'] && AuthService.tokenTime) {
+                let dd: Date = new Date(AuthService.tokenTime);
+                dd.setSeconds(
+                  dd.getSeconds() + parseInt(user.session['expires_in']),
+                );
+                AuthService.tokenCounter = parseInt(user.session['expires_in']);
+                AuthService.tokenDeadline = dd;
+              }
             }
+            callback(AuthService.AUTH_AUTHORIZED);
+          } else {
+            callback(AuthService.AUTH_NOT_AUTHORIZED);
           }
-          callback(AuthService.AUTH_AUTHORIZED);
-        } else {
-          callback(AuthService.AUTH_NOT_AUTHORIZED);
-        }
-      });
-    },
-    (error) => {
-      callback(AuthService.AUTH_NOT_LOGGED_IN);
-    });
+        });
+      },
+      (error) => {
+        callback(AuthService.AUTH_NOT_LOGGED_IN);
+      },
+    );
   }
 
   keycloakAuth(code: string, callback: (arg0: number) => void = null) {
     this.getToken(code).subscribe(
-        (token: string) => {
-            if (!token) {
-                callback(AuthService.AUTH_NOT_LOGGED_IN);
-            } else {
-                AuthService.token = token;
-                AuthService.tokenTime = new Date();
-                localStorage.setItem('account.token', token);
-                localStorage.setItem('account.token.time', new Date().toISOString());
-                this.checkToken(callback);
-            }
-        },
-        (error) => {
-            callback(AuthService.AUTH_NOT_LOGGED_IN);
+      (token: string) => {
+        if (!token) {
+          callback(AuthService.AUTH_NOT_LOGGED_IN);
+        } else {
+          AuthService.token = token;
+          AuthService.tokenTime = new Date();
+          localStorage.setItem('account.token', token);
+          localStorage.setItem('account.token.time', new Date().toISOString());
+          this.checkToken(callback);
         }
+      },
+      (error) => {
+        callback(AuthService.AUTH_NOT_LOGGED_IN);
+      },
     );
   }
 
   private validateToken(): Observable<User> {
-    return this.http.get(`${this.settings.authBaseUrl}/user?sessionAttributes=true`)
-        .pipe(map(response => User.fromJson(response)));
+    return this.http
+      .get(`${this.settings.authBaseUrl}/user?sessionAttributes=true`)
+      .pipe(map((response) => User.fromJson(response)));
   }
-
 
   private logoutKramerius(): Observable<any> {
     return this.http.get(`${this.settings.authBaseUrl}/user/logout`);
@@ -224,9 +231,9 @@ export class AuthService {
     const redircetUri = `${this.baseUrl()}/keycloak`;
     // let url = `${this.settings.clientApiBaseUrl}/user/auth/login?&redirect_uri=${redircetUri}`;
     let url = `${this.settings.authBaseUrl}/user/auth/token?code=${code}&redirect_uri=${redircetUri}`;
-    return this.http.get(url).pipe(map((response: any) => 
-      response['access_token'])
-    );
+    return this.http
+      .get(url)
+      .pipe(map((response: any) => response['access_token']));
 
     /*
     let url = `${this.settings.keycloak.baseUrl}/realms/kramerius/protocol/openid-connect/token`;
@@ -244,5 +251,4 @@ export class AuthService {
       response['access_token'])
     );*/
   }
-  
 }

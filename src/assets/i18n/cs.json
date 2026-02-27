@@ -91,6 +91,8 @@
   },
   "message": {
     "altoVersionSaved": "ALTO verze uložena",
+    "processCompleted": "{{type}} pro {{pid}} dokončeno",
+    "processFailed": "{{type}} pro {{pid}} selhalo",
     "altoVersionGenerationPlanned": "Vygenerování ALTO verze naplánováno",
     "hierarchyFetchPlanned": "Načtení hierarchie dokumentů naplánováno",
     "acceptEngineVersionsPlanned": "Přijetí verzí engine naplánováno",

@@ -155,7 +155,12 @@ export class ViewerComponent {
     // ALTO coords use Page WIDTH/HEIGHT (mm10 or pixels). If provided, scale by displayed size / alto page size.
     const displayedW = img.width;
     const displayedH = img.height;
-    if (this.altoPageWidth != null && this.altoPageHeight != null && this.altoPageWidth > 0 && this.altoPageHeight > 0) {
+    if (
+      this.altoPageWidth != null &&
+      this.altoPageHeight != null &&
+      this.altoPageWidth > 0 &&
+      this.altoPageHeight > 0
+    ) {
       this.scale = displayedW / this.altoPageWidth;
       this.scaleY = displayedH / this.altoPageHeight;
     } else {
@@ -315,7 +320,6 @@ export class ViewerComponent {
       !value?.lines?.length &&
       !value?.words?.length
     ) {
-      console.log('no blocks, lines, words');
       return;
     }
     if (
@@ -323,7 +327,6 @@ export class ViewerComponent {
       !this.canvasWidth ||
       !this.canvasHeight
     ) {
-      console.log('no auto canvas, canvas width, canvas height');
       return;
     }
     this.ctxAuto = <CanvasRenderingContext2D>(
@@ -341,8 +344,7 @@ export class ViewerComponent {
       if (attrs?.['VPOS'] != null && attrs?.['HPOS'] != null) {
         const scrollerBounds = this.scroller.getBoundingClientRect();
         this.scroller.scrollTop =
-          parseFloat(attrs['VPOS']) * this.scaleY -
-          scrollerBounds.height * 0.5;
+          parseFloat(attrs['VPOS']) * this.scaleY - scrollerBounds.height * 0.5;
         this.scroller.scrollLeft =
           parseFloat(attrs['HPOS']) * this.scale - scrollerBounds.width * 0.5;
       }

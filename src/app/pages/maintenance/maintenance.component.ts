@@ -7,6 +7,7 @@ import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { TranslateModule } from '@ngx-translate/core';
 import { AppService } from 'src/app/app.service';
 import { PlanProcessDialogComponent } from 'src/app/components/plan-process-dialog/plan-process-dialog.component';
+import { BatchPollingService } from 'src/app/shared/batch-polling.service';
 
 @Component({
   selector: 'app-maintenance',
@@ -26,6 +27,7 @@ export class MaintenanceComponent {
   constructor(
     private service: AppService,
     private dialog: MatDialog,
+    private batchPolling: BatchPollingService,
   ) {}
 
   openReindexDialog(): void {
@@ -38,8 +40,10 @@ export class MaintenanceComponent {
       .subscribe((result) => {
         if (result?.priority) {
           this.service.planReindex(result.priority).subscribe({
-            next: () =>
-              this.service.showSnackBar('message.reindexPlanned', false),
+            next: () => {
+              this.batchPolling.triggerCheck();
+              this.service.showSnackBar('message.reindexPlanned', false);
+            },
             error: (err) =>
               this.service.showSnackBar(
                 err?.error?.message || 'message.error',

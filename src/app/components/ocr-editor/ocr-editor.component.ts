@@ -55,9 +55,22 @@ export class OcrEditorComponent {
     this.diffs = {};
     if (this._printSpaceDiff) {
       this._printSpace.elements.forEach((tb: XmlJsElement) => {
+        if (!tb.elements) {
+          return;
+        }
         tb.elements.forEach((line: XmlJsElement, idx: number) => {
+          if (!line.elements) {
+            return;
+          }
           line.idx = idx;
-          line.elements.forEach((word: XmlJsElement, widx: number) => {
+          line.elements.forEach((word: XmlJsElement) => {
+            if (
+              !word.attributes ||
+              !word.attributes['HPOS'] ||
+              !word.attributes['VPOS']
+            ) {
+              return;
+            }
             const d = getElementByPos(
               this._printSpaceDiff,
               word.attributes['HPOS'],

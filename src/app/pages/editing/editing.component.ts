@@ -26,6 +26,7 @@ import {
 } from 'src/app/components/plan-process-dialog/plan-process-dialog.component';
 import { UserInfo } from 'src/app/shared/user-info';
 import { BatchPriority } from 'src/app/shared/batch';
+import { BatchPollingService } from 'src/app/shared/batch-polling.service';
 
 @Component({
   selector: 'app-editing',
@@ -66,6 +67,7 @@ export class EditingComponent implements OnInit {
   imgW = 100;
 
   constructor(
+    private batchPolling: BatchPollingService,
     public dialog: MatDialog,
     private route: ActivatedRoute,
     private router: Router,
@@ -176,10 +178,8 @@ export class EditingComponent implements OnInit {
               }),
             )
           ) {
-            //console.log(idx);
             this.state.selectedLines.push(line);
             line.elements.forEach((word: XmlJsElement, widx: number) => {
-              //word.idx = widx;
               if (
                 this.intersectRect(
                   this.selection,
@@ -188,11 +188,9 @@ export class EditingComponent implements OnInit {
                     y: parseInt(word.attributes['VPOS']),
                     width: parseInt(word.attributes['WIDTH']),
                     height: parseInt(word.attributes['HEIGHT']),
-                    // x: word.$.HPOS, y: word.$.VPOS, width: word.$.WIDTH, height: word.$.HEIGHT
                   }),
                 )
               ) {
-                //console.log(idx);
                 this.state.selectedWords.push(word);
               }
             });
@@ -241,6 +239,7 @@ export class EditingComponent implements OnInit {
     this.service.saveAltoVersion(this.pid, altoContent).subscribe({
       next: (res) => {
         this.service.showSnackBar('message.altoVersionSaved');
+        this.loadAltoVersion();
       },
     });
   }
@@ -266,6 +265,7 @@ export class EditingComponent implements OnInit {
       .generateAlto(this.pid, engine.username, priority, this.config.instance)
       .subscribe({
         next: () => {
+          this.batchPolling.triggerCheck();
           this.service.showSnackBar('message.altoVersionGenerationPlanned');
         },
         error: (err) => {

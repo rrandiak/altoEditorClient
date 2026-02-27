@@ -1,9 +1,11 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
+import { tap } from 'rxjs/operators';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { AuthService } from 'src/app/auth.service';
 import { AppService } from 'src/app/app.service';
+import { BatchPollingService } from 'src/app/shared/batch-polling.service';
 
 @Component({
   selector: 'app-auth',
@@ -13,21 +15,24 @@ import { AppService } from 'src/app/app.service';
 })
 export class AuthComponent implements OnInit {
 
-  constructor(private auth: AuthService,
-              private appService: AppService,
-              private route: ActivatedRoute,
-              public router: Router) { }
+  constructor(
+    private auth: AuthService,
+    private appService: AppService,
+    private batchPolling: BatchPollingService,
+    private route: ActivatedRoute,
+    public router: Router,
+  ) {}
 
   ngOnInit() {
     this.route.queryParamMap.subscribe(params => {
-      const sessionState = params.get('session_state');
       const code = params.get('code');
       const target = localStorage.getItem('login.url') || '/';
-      console.log(target)
       localStorage.removeItem('login.url');
       this.auth.keycloakAuth(code, (status: number) => {
         if (status == AuthService.AUTH_AUTHORIZED) {
-          this.appService.loadSession().subscribe({
+          this.appService.loadSession().pipe(
+            tap(() => this.batchPolling.start()),
+          ).subscribe({
             next: () => this.router.navigateByUrl(target),
             error: () => this.router.navigateByUrl(target),
           });

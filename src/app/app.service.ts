@@ -197,6 +197,8 @@ export class AppService {
       httpParams = httpParams.set('type', String(filters.type));
     if (filters.instance != null)
       httpParams = httpParams.set('instance', filters.instance);
+    if (filters.createdBy != null)
+      httpParams = httpParams.set('createdBy', filters.createdBy);
     if (params?.page != null)
       httpParams = httpParams.set('page', String(params.page));
     if (params?.size != null)

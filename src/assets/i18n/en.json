@@ -91,6 +91,8 @@
   },
   "message": {
     "altoVersionSaved": "ALTO version saved",
+    "processCompleted": "{{type}} for {{pid}} completed",
+    "processFailed": "{{type}} for {{pid}} failed",
     "altoVersionGenerationPlanned": "ALTO version generation planned",
     "hierarchyFetchPlanned": "Document hierarchy fetch planned",
     "acceptEngineVersionsPlanned": "Accept engine versions planned",

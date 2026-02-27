@@ -36,6 +36,7 @@ export interface BatchSearchFilters {
   updatedAfter?: string;
   /** ISO 8601 date-time string */
   updatedBefore?: string;
+  createdBy?: string;
   priority?: BatchPriority | string;
   type?: BatchType | string;
   instance?: string;

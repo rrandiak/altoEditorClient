@@ -1,4 +1,4 @@
-import { Component, Inject } from '@angular/core';
+import { Component, Inject, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { TranslateModule } from '@ngx-translate/core';
@@ -14,6 +14,7 @@ import {
   BatchState,
   BatchType,
 } from 'src/app/shared/batch';
+import { Subject } from 'rxjs';
 import { MatSortModule } from '@angular/material/sort';
 import {
   MatPaginatorIntl,
@@ -42,6 +43,7 @@ import { PaginatorI18n } from 'src/app/shared/paginator-i18n';
 import { AppDateTimePipe } from 'src/app/shared/app-date-time.pipe';
 
 const today = new Date();
+const POLL_INTERVAL_MS = 5000;
 const month = today.getMonth();
 const year = today.getFullYear();
 
@@ -74,7 +76,7 @@ const year = today.getFullYear();
   templateUrl: './process-management.component.html',
   styleUrls: ['./process-management.component.scss'],
 })
-export class ProcessManagementComponent {
+export class ProcessManagementComponent implements OnDestroy {
   states: BatchState[] = Object.values(BatchState);
   priorities: BatchPriority[] = Object.values(BatchPriority);
   types: BatchType[] = Object.values(BatchType);
@@ -103,6 +105,9 @@ export class ProcessManagementComponent {
   pageIndex: number = 0;
   pageSize: number = 25;
 
+  private readonly destroy$ = new Subject<void>();
+  private refreshInterval: ReturnType<typeof setInterval> | null = null;
+
   constructor(
     private _adapter: DateAdapter<any>,
     @Inject(MAT_DATE_LOCALE) private _locale: string,
@@ -115,6 +120,37 @@ export class ProcessManagementComponent {
     this._locale = 'cs';
     this._adapter.setLocale(this._locale);
     this.getBatches();
+    this.startRefreshIfRunning();
+  }
+
+  ngOnDestroy() {
+    this.destroy$.next();
+    this.destroy$.complete();
+    this.stopRefresh();
+  }
+
+  private hasRunningOnPage(): boolean {
+    return this.batches.some(
+      (b) => b.state === BatchState.RUNNING || b.state === BatchState.PLANNED,
+    );
+  }
+
+  private startRefreshIfRunning() {
+    if (this.hasRunningOnPage() && !this.refreshInterval) {
+      this.refreshInterval = setInterval(() => {
+        this.getBatches();
+        if (!this.hasRunningOnPage()) {
+          this.stopRefresh();
+        }
+      }, POLL_INTERVAL_MS);
+    }
+  }
+
+  private stopRefresh() {
+    if (this.refreshInterval) {
+      clearInterval(this.refreshInterval);
+      this.refreshInterval = null;
+    }
   }
 
   getBatches() {
@@ -128,6 +164,7 @@ export class ProcessManagementComponent {
       .subscribe((res) => {
         this.batches = res.content;
         this.totalRows = res.totalElements;
+        this.startRefreshIfRunning();
       });
   }
 

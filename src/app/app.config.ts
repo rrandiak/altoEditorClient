@@ -22,6 +22,7 @@ import { AppConfiguration } from './app-configuration';
 import { HIGHLIGHT_OPTIONS, HighlightOptions } from 'ngx-highlightjs';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { AuthGuard } from './auth.guard';
+import { BatchPollingService } from './shared/batch-polling.service';
 import { CuratorGuard } from './curator.guard';
 import { AuthService } from './auth.service';
 import { AuthInterceptor } from './auth-interceptor';
@@ -61,6 +62,7 @@ export const appConfig: ApplicationConfig = {
     provideHttpClient(withInterceptorsFromDi()),
     AppState,
     AuthGuard,
+    BatchPollingService,
     CuratorGuard,
     AuthService,
     AppConfiguration,

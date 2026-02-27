@@ -52,13 +52,20 @@ export function getElementByPos(
   hpos: string,
   vpos: string,
 ): XmlJsElement {
+  if (!printSpace.elements) {
+    return null;
+  }
   for (let i = 0; i < printSpace.elements.length; i++) {
     const tb: XmlJsElement = printSpace.elements[i];
+    if (!tb.elements) {
+      return null;
+    }
     for (let idx = 0; idx < tb.elements.length; idx++) {
       const line: XmlJsElement = tb.elements[idx];
       for (let widx = 0; widx < line.elements.length; widx++) {
         const word: XmlJsElement = line.elements[widx];
         if (
+          word.attributes &&
           word.attributes['HPOS'] === hpos &&
           word.attributes['VPOS'] === vpos
         ) {

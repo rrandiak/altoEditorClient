@@ -28,6 +28,7 @@ import {
 } from 'src/app/components/plan-process-dialog/plan-process-dialog.component';
 import { UserInfo } from 'src/app/shared/user-info';
 import { BatchPriority } from 'src/app/shared/batch';
+import { BatchPollingService } from 'src/app/shared/batch-polling.service';
 import { AppDateTimePipe } from 'src/app/shared/app-date-time.pipe';
 
 @Component({
@@ -80,6 +81,7 @@ export class RevisionDetailComponent {
   bottom_left_size = 50;
 
   constructor(
+    private batchPolling: BatchPollingService,
     private route: ActivatedRoute,
     private router: Router,
     private dialog: MatDialog,
@@ -204,7 +206,7 @@ export class RevisionDetailComponent {
   }
 
   getActiveVersion() {
-    if (this.pid == null) return;
+    if (this.pid == null || this.version === null) return;
     const pid = this.pid;
     this.service.fetchActiveAltoVersion(pid).subscribe({
       next: (res: AltoVersionContent) => {
@@ -308,9 +310,8 @@ export class RevisionDetailComponent {
           if (res?.errors?.length) {
             this.service.showSnackBar(res.errors[0], true);
           } else {
-            this.service.showSnackBar(
-              res?.content ? res.content : 'desc.PEROExists',
-            );
+            this.batchPolling.triggerCheck();
+            this.service.showSnackBar('message.altoVersionGenerationPlanned');
           }
         },
         error: (err) =>
@@ -326,11 +327,10 @@ export class RevisionDetailComponent {
     if (!this.pid || !this.state.alto) return;
     const altoContent = utf8ToBase64(js2xml(this.state.alto));
     this.service.saveAltoVersion(this.pid, altoContent).subscribe({
-      next: (res: any) => {
-        this.service.showSnackBar(
-          res?.content ? res.content : 'desc.savedSuccess',
-        );
+      next: (res: AltoVersion) => {
+        this.service.showSnackBar('message.altoVersionSaved');
         this.state.clearSelection();
+        this.selectVersion(res.version);
         this.getSelectedVersion();
         this.getVersions();
       },
@@ -363,7 +363,6 @@ export class RevisionDetailComponent {
 
   splitChanged(e: any) {
     this.viewerWidth = e.sizes[0];
-    // console.log(getVisibleAreaSizes())
   }
 
   zoom(scale: number) {
