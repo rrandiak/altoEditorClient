@@ -34,6 +34,8 @@ export class RevisionListStateService {
     const page = r.offset != null && r.limit ? Math.floor(r.offset / r.limit) : 0;
     p['page'] = String(page);
     p['size'] = String(r.limit ?? 25);
+    if (r.sortBy) p['sortBy'] = r.sortBy;
+    if (r.sortOrder) p['sortOrder'] = r.sortOrder.toLowerCase();
     return p;
   }
 }

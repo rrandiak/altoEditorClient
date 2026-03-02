@@ -223,14 +223,6 @@ export class RevisionComponent {
     }
   }
 
-  filterByUsername(username: string): void {
-    const user = this.users.find((u) => u.username === username);
-    if (user) {
-      this.userFilter = user.id;
-      this.filter('username', user.id);
-    }
-  }
-
   filter(field: string, value: string | number | null): void {
     if (field === 'username') {
       this.userFilter = value as number | null;
