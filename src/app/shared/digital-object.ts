@@ -1,3 +1,40 @@
+/** Kramerius document model enum; values match backend Model enum. */
+export enum Model {
+  PERIODICAL = 'periodical',
+  PERIODICALVOLUME = 'periodicalvolume',
+  PERIODICALITEM = 'periodicalitem',
+  SUPPLEMENT = 'supplement',
+  ARTICLE = 'article',
+  MONOGRAPH = 'monograph',
+  MONOGRAPHUNIT = 'monographunit',
+  GRAPHIC = 'graphic',
+  MAP = 'map',
+  SHEETMUSIC = 'sheetmusic',
+  ARCHIVE = 'archive',
+  MANUSCRIPT = 'manuscript',
+  CONVOLUTE = 'convolute',
+  PICTURE = 'picture',
+  SOUNDRECORDING = 'soundrecording',
+  TRACK = 'track',
+  SOUNDUNIT = 'soundunit',
+  INTERNALPART = 'internalpart',
+  COLLECTION = 'collection',
+  PAGE = 'page',
+}
+
+export const TOP_MODELS = [
+  Model.PERIODICAL,
+  Model.MONOGRAPH,
+  Model.GRAPHIC,
+  Model.MAP,
+  Model.SHEETMUSIC,
+  Model.ARCHIVE,
+  Model.MANUSCRIPT,
+  Model.CONVOLUTE,
+  Model.PICTURE,
+  Model.SOUNDRECORDING,
+];
+
 export interface KrameriusDO {
   pid: string;
   model: string;

@@ -69,6 +69,9 @@
     "filterByState": "Filtrovat dle stavu",
     "filterByPriority": "Filtrovat dle priority",
     "filterByType": "Filtrovat dle typu",
+    "filterByTitle": "Filtrovat dle názvu",
+    "filterByModel": "Filtrovat dle modelu",
+    "all": "Vše",
     "acceptSuccess": "Verze přijata",
     "rejectSuccess": "Verze odmítnuta",
     "archiveSuccess": "Verze archivována"
@@ -109,11 +112,25 @@
   },
   "model": {
     "page": "Stránka",
-    "periodical": "Periodikum",
-    "periodicalvolume": "Ročník periodika",
     "periodicalitem": "Číslo periodika",
     "monograph": "Monografie",
-    "monographvolume": "Část monografie"
+    "article": "Článek",
+    "supplement": "Příloha",
+    "periodicalvolume": "Ročník periodika",
+    "graphic": "Grafika",
+    "map": "Mapa",
+    "monographunit": "Jednotka monografie",
+    "sheetmusic": "Notový záznam",
+    "track": "Stopa",
+    "periodical": "Periodikum",
+    "soundunit": "Zvuková jednotka",
+    "internalpart": "Vnitřní část",
+    "collection": "Kolekce",
+    "soundrecording": "Zvukový záznam",
+    "archive": "Archiv",
+    "convolute": "Konvolut",
+    "manuscript": "Rukopis",
+    "picture": "Obrázek"
   },
   "versionState": {
     "ACTIVE": "Aktivní verze",
@@ -142,7 +159,8 @@
     "GENERATE_SINGLE": "Generování pro jednu stránku",
     "GENERATE_FOR_HIERARCHY": "Generování pro hierarchii",
     "RETRIEVE_HIERARCHY": "Načtení hierarchie",
-    "REINDEX": "Reindexace"
+    "REINDEX": "Reindexace",
+    "ACCEPT_ENGINE_VERSIONS": "Přijetí verzí engine"
   },
   "location": {
     "local": "AltoEditor",

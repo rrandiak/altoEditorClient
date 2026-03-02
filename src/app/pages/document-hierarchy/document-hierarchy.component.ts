@@ -20,6 +20,7 @@ import { MatTableModule } from '@angular/material/table';
 import { MatSortModule, Sort } from '@angular/material/sort';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatSelectModule } from '@angular/material/select';
 import { PaginatorI18n } from 'src/app/shared/paginator-i18n';
 import { AppConfiguration } from 'src/app/app-configuration';
 import { AppService } from 'src/app/app.service';
@@ -27,6 +28,8 @@ import { AppState } from 'src/app/shared/app.state';
 import {
   DOHierarchy,
   DOHierarchySearchRequest,
+  Model,
+  TOP_MODELS,
 } from 'src/app/shared/digital-object';
 import { SearchResults } from 'src/app/shared/search-results';
 import { BatchPriority } from 'src/app/shared/batch';
@@ -75,6 +78,7 @@ export interface PidCheckResult {
     MatSortModule,
     MatProgressSpinnerModule,
     MatCheckboxModule,
+    MatSelectModule,
     AppDateTimePipe,
   ],
   templateUrl: './document-hierarchy.component.html',
@@ -96,6 +100,9 @@ export class DocumentHierarchyComponent implements OnInit {
   loadingLocal = false;
   localSortBy = 'title';
   localOrderSort: 'asc' | 'desc' = 'asc';
+  localTitleFilter = '';
+  localModelFilter: string = '';
+  modelOptions = TOP_MODELS;
   expandedChildren = new Map<string, DOHierarchy[]>();
   loadingChildrenPid: string | null = null;
 
@@ -341,6 +348,12 @@ export class DocumentHierarchyComponent implements OnInit {
       sortBy: this.localSortBy,
       sortOrder: this.localOrderSort === 'asc' ? 'ASC' : 'DESC',
     };
+    if (this.localTitleFilter?.trim()) {
+      request.title = this.localTitleFilter.trim();
+    }
+    if (this.localModelFilter?.trim()) {
+      request.model = this.localModelFilter.trim();
+    }
     this.service.searchDOHierarchy(request).subscribe({
       next: (p: SearchResults<DOHierarchy>) => {
         this.localLevel0 = p.items ?? [];
@@ -363,6 +376,11 @@ export class DocumentHierarchyComponent implements OnInit {
   onLocalPageChanged(e: PageEvent): void {
     this.localPageIndex = e.pageIndex;
     this.localPageSize = e.pageSize;
+    this.loadLocalPage();
+  }
+
+  applyLocalFilter(): void {
+    this.localPageIndex = 0;
     this.loadLocalPage();
   }
 
@@ -771,15 +789,23 @@ export class DocumentHierarchyComponent implements OnInit {
     return this.selectedBothPids.size;
   }
   get selectedCount(): number {
-    return this.isPidSearchMode ? this.selectedBothCount : this.selectedLocalCount;
+    return this.isPidSearchMode
+      ? this.selectedBothCount
+      : this.selectedLocalCount;
   }
   isAllLocalSelected(): boolean {
     const topLevel = this.localLevel0;
-    return topLevel.length > 0 && topLevel.every((r) => this.selectedLocalPids.has(r.pid));
+    return (
+      topLevel.length > 0 &&
+      topLevel.every((r) => this.selectedLocalPids.has(r.pid))
+    );
   }
   isAllBothSelected(): boolean {
     const topLevel = this.pidResults;
-    return topLevel.length > 0 && topLevel.every((r) => this.selectedBothPids.has(r.pid));
+    return (
+      topLevel.length > 0 &&
+      topLevel.every((r) => this.selectedBothPids.has(r.pid))
+    );
   }
   toggleAllLocalSelection(_event?: unknown): void {
     if (this.isAllLocalSelected()) {
@@ -886,7 +912,10 @@ export class DocumentHierarchyComponent implements OnInit {
       if (i >= pids.length) {
         this.batchProgress = null;
         this.batchPolling.triggerCheck();
-        this.service.showSnackBar('message.altoVersionGenerationPlanned', false);
+        this.service.showSnackBar(
+          'message.altoVersionGenerationPlanned',
+          false,
+        );
         this.selectedLocalPids.clear();
         this.selectedBothPids.clear();
         this.selectedLocalPids = new Set();
@@ -896,12 +925,7 @@ export class DocumentHierarchyComponent implements OnInit {
       const pid = pids[i];
       const doPage = isPage(pid);
       const obs = doPage
-        ? this.service.generateAlto(
-            pid,
-            engine,
-            priority,
-            this.config.instance,
-          )
+        ? this.service.generateAlto(pid, engine, priority, this.config.instance)
         : this.service.planGenerateForHierarchy(pid, engine, priority);
       obs.subscribe({
         next: () => {
@@ -932,7 +956,9 @@ export class DocumentHierarchyComponent implements OnInit {
     }
     this.dialog
       .open(PlanProcessDialogComponent, {
-        data: { title: 'actionTitle.fetchFromKramerius' } as PlanProcessDialogData,
+        data: {
+          title: 'actionTitle.fetchFromKramerius',
+        } as PlanProcessDialogData,
         width: '320px',
       })
       .afterClosed()
@@ -998,7 +1024,11 @@ export class DocumentHierarchyComponent implements OnInit {
         }
       });
   }
-  private batchAccept(pids: string[], engine: string, priority: BatchPriority): void {
+  private batchAccept(
+    pids: string[],
+    engine: string,
+    priority: BatchPriority,
+  ): void {
     this.batchProgress = { planned: 0, total: pids.length };
     let done = 0;
     const run = (i: number) => {
@@ -1012,20 +1042,22 @@ export class DocumentHierarchyComponent implements OnInit {
         this.selectedBothPids = new Set();
         return;
       }
-      this.service.planAcceptEngineVersions(pids[i], engine, priority).subscribe({
-        next: () => {
-          this.batchProgress = { planned: done + 1, total: pids.length };
-          done++;
-          run(i + 1);
-        },
-        error: (err) => {
-          this.batchProgress = null;
-          this.service.showSnackBar(
-            err?.error?.message || 'message.error',
-            true,
-          );
-        },
-      });
+      this.service
+        .planAcceptEngineVersions(pids[i], engine, priority)
+        .subscribe({
+          next: () => {
+            this.batchProgress = { planned: done + 1, total: pids.length };
+            done++;
+            run(i + 1);
+          },
+          error: (err) => {
+            this.batchProgress = null;
+            this.service.showSnackBar(
+              err?.error?.message || 'message.error',
+              true,
+            );
+          },
+        });
     };
     run(0);
   }

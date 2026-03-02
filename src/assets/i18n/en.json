@@ -69,6 +69,9 @@
     "filterByState": "Filter by state",
     "filterByPriority": "Filter by priority",
     "filterByType": "Filter by type",
+    "filterByTitle": "Filter by title",
+    "filterByModel": "Filter by model",
+    "all": "All",
     "acceptSuccess": "Version accepted",
     "rejectSuccess": "Version rejected",
     "archiveSuccess": "Version archived"
@@ -109,11 +112,25 @@
   },
   "model": {
     "page": "Page",
-    "periodical": "Periodical",
-    "periodicalvolume": "Periodical volume",
     "periodicalitem": "Periodical issue",
     "monograph": "Monograph",
-    "monographvolume": "Monograph volume"
+    "article": "Article",
+    "supplement": "Supplement",
+    "periodicalvolume": "Periodical volume",
+    "graphic": "Graphic",
+    "map": "Map",
+    "monographunit": "Monograph unit",
+    "sheetmusic": "Sheet music",
+    "track": "Track",
+    "periodical": "Periodical",
+    "soundunit": "Sound unit",
+    "internalpart": "Internal part",
+    "collection": "Collection",
+    "soundrecording": "Sound recording",
+    "archive": "Archive",
+    "convolute": "Convolute",
+    "manuscript": "Manuscript",
+    "picture": "Picture"
   },
   "versionState": {
     "ACTIVE": "Active version",
@@ -142,7 +159,8 @@
     "GENERATE_SINGLE": "Generate for single page",
     "GENERATE_FOR_HIERARCHY": "Generate for hierarchy",
     "RETRIEVE_HIERARCHY": "Retrieve hierarchy",
-    "REINDEX": "Reindex"
+    "REINDEX": "Reindex",
+    "ACCEPT_ENGINE_VERSIONS": "Accept engine versions"
   },
   "location": {
     "local": "AltoEditor",

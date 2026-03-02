@@ -124,7 +124,17 @@
             </td>
           </ng-container>
           <ng-container matColumnDef="title">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header>{{ 'desc.title' | translate }}</th>
+            <th mat-header-cell *matHeaderCellDef class="app-header-cell-with-filter">
+              <div class="app-header-inner">
+                <mat-form-field class="app-header-filter" (click)="$event.stopPropagation()">
+                  <input matInput type="text" [(ngModel)]="localTitleFilter" (change)="applyLocalFilter()" [placeholder]="'desc.filterByTitle' | translate">
+                  <button mat-icon-button matIconSuffix color="warn" *ngIf="localTitleFilter" (click)="localTitleFilter = ''; applyLocalFilter()"><mat-icon>clear</mat-icon></button>
+                </mat-form-field>
+                <div class="app-header-title">
+                  <span mat-sort-header="title">{{ 'desc.title' | translate }}</span>
+                </div>
+              </div>
+            </th>
             <td mat-cell *matCellDef="let doc" class="app-title-cell">
               <div class="app-tree-row" [style.padding-left.px]="doc.level * 24">
                 <span class="app-tree-toggle">
@@ -144,23 +154,55 @@
             </td>
           </ng-container>
           <ng-container matColumnDef="pid">
-            <th mat-header-cell *matHeaderCellDef>{{ 'desc.pid' | translate }}</th>
+            <th mat-header-cell *matHeaderCellDef class="app-header-cell-with-filter">
+              <div class="app-header-inner">
+                <div class="app-header-title">{{ 'desc.pid' | translate }}</div>
+              </div>
+            </th>
             <td mat-cell *matCellDef="let doc">{{ doc.pid }}</td>
           </ng-container>
           <ng-container matColumnDef="model">
-            <th mat-header-cell *matHeaderCellDef>{{ 'desc.model' | translate }}</th>
+            <th mat-header-cell *matHeaderCellDef class="app-header-cell-with-filter">
+              <div class="app-header-inner">
+                <mat-form-field class="app-header-filter" (click)="$event.stopPropagation()">
+                  <mat-select [(ngModel)]="localModelFilter" (ngModelChange)="applyLocalFilter()" panelClass="app-panel-table-header" [placeholder]="'desc.filterByModel' | translate">
+                    <mat-option *ngFor="let m of modelOptions" [value]="m">{{ 'model.' + m | translate }}</mat-option>
+                  </mat-select>
+                  <button mat-icon-button matIconSuffix color="warn" *ngIf="localModelFilter" (click)="localModelFilter = ''; applyLocalFilter()"><mat-icon>clear</mat-icon></button>
+                </mat-form-field>
+                <div class="app-header-title">
+                  <span>{{ 'desc.model' | translate }}</span>
+                </div>
+              </div>
+            </th>
             <td mat-cell *matCellDef="let doc">{{ 'model.' + doc.model | translate }}</td>
           </ng-container>
           <ng-container matColumnDef="pagesCount">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header>{{ 'desc.pagesCount' | translate }}</th>
+            <th mat-header-cell *matHeaderCellDef class="app-header-cell-with-filter">
+              <div class="app-header-inner">
+                <div class="app-header-title">
+                  <span mat-sort-header="pagesCount">{{ 'desc.pagesCount' | translate }}</span>
+                </div>
+              </div>
+            </th>
             <td mat-cell *matCellDef="let doc">{{ doc.pagesCount ?? '—' }}</td>
           </ng-container>
           <ng-container matColumnDef="pagesWithAlto">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header>{{ 'desc.pagesWithAlto' | translate }}</th>
+            <th mat-header-cell *matHeaderCellDef class="app-header-cell-with-filter">
+              <div class="app-header-inner">
+                <div class="app-header-title">
+                  <span mat-sort-header="pagesWithAlto">{{ 'desc.pagesWithAlto' | translate }}</span>
+                </div>
+              </div>
+            </th>
             <td mat-cell *matCellDef="let doc">{{ doc.pagesWithAlto ?? '—' }}</td>
           </ng-container>
           <ng-container matColumnDef="updatedAt">
-            <th mat-header-cell *matHeaderCellDef>{{ 'desc.updatedAt' | translate }}</th>
+            <th mat-header-cell *matHeaderCellDef class="app-header-cell-with-filter">
+              <div class="app-header-inner">
+                <div class="app-header-title">{{ 'desc.updatedAt' | translate }}</div>
+              </div>
+            </th>
             <td mat-cell *matCellDef="let doc">{{ doc.updatedAt | appDateTime }}</td>
           </ng-container>
           <ng-container matColumnDef="actions">
