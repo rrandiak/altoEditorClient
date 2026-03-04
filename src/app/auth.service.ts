@@ -94,6 +94,7 @@ export class AuthService {
 
   logout(suffix: string = '') {
     this.batchPolling.stop();
+    this.batchPolling.clearTrackedBatchesForCurrentUser();
     this.appService.resetSessionLoadCache();
     AuthService.token = null;
     AuthService.tokenTime = null;
