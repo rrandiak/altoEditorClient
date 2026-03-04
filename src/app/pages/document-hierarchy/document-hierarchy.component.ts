@@ -92,6 +92,10 @@ export class DocumentHierarchyComponent implements OnInit {
   pidInputText = '';
   pidResults: PidCheckResult[] = [];
   loadingPids = false;
+  /** When checking PIDs one-by-one: current index (1-based) and total. */
+  checkingPidCurrent = 0;
+  checkingPidTotal = 0;
+  private checkCancelled = false;
 
   localLevel0: DOHierarchy[] = [];
   localTotal = 0;
@@ -238,10 +242,22 @@ export class DocumentHierarchyComponent implements OnInit {
   }
 
   togglePidInput(): void {
+    if (this.loadingPids) return;
     this.showPidInput = !this.showPidInput;
   }
 
   backToLocal(): void {
+    if (this.loadingPids) {
+      this.checkCancelled = true;
+      this.loadingPids = false;
+      this.checkingPidCurrent = 0;
+      this.checkingPidTotal = 0;
+      this.pidResults = [];
+      this.showPidInput = false;
+      this.isPidSearchMode = false;
+      this.expandedPidChildren.clear();
+      return;
+    }
     this.isPidSearchMode = false;
     this.showPidInput = false;
     this.pidResults = [];
@@ -412,52 +428,75 @@ export class DocumentHierarchyComponent implements OnInit {
   checkPids(): void {
     const pids = this.pids;
     if (!pids.length) return;
+    this.checkCancelled = false;
     this.loadingPids = true;
+    this.showPidInput = false;
+    this.checkingPidTotal = pids.length;
+    this.checkingPidCurrent = 0;
     this.pidResults = [];
-    const tasks = pids.map((pid) =>
-      forkJoin({
-        kramerius: this.service.getKrameriusDOHierarchy(pid).pipe(
-          map((h) => h as KrameriusDOHierarchy | null),
+    this.expandedPidChildren.clear();
+    this.isPidSearchMode = true;
+
+    const run = (i: number) => {
+      if (this.checkCancelled) return;
+      if (i >= pids.length) {
+        this.loadingPids = false;
+        this.checkingPidCurrent = 0;
+        this.checkingPidTotal = 0;
+        this.showPidInput = false;
+        return;
+      }
+      this.checkingPidCurrent = i + 1;
+      this.checkOnePid(pids[i]).subscribe({
+        next: (result) => {
+          if (this.checkCancelled) return;
+          this.pidResults = [...this.pidResults, result];
+          run(i + 1);
+        },
+        error: () => {
+          if (this.checkCancelled) return;
+          this.pidResults = [
+            ...this.pidResults,
+            { pid: pids[i], kramerius: null, local: null },
+          ];
+          run(i + 1);
+        },
+      });
+    };
+    run(0);
+  }
+
+  private checkOnePid(pid: string) {
+    return forkJoin({
+      kramerius: this.service.getKrameriusDOHierarchy(pid).pipe(
+        map((h) => h as KrameriusDOHierarchy | null),
+        catchError(() => of(null)),
+      ),
+      local: this.service
+        .searchDOHierarchy({ pid, limit: 1, offset: 0 })
+        .pipe(
+          map(
+            (p: SearchResults<DOHierarchy>) =>
+              (p.total && p.items?.length ? p.items[0] : null) as DOHierarchy | null,
+          ),
           catchError(() => of(null)),
         ),
-        local: this.service
-          .searchDOHierarchy({ pid, limit: 1, offset: 0 })
-          .pipe(
-            map(
-              (p: SearchResults<DOHierarchy>) =>
-                (p.total && p.items?.length
-                  ? p.items[0]
-                  : null) as DOHierarchy | null,
-            ),
-            catchError(() => of(null)),
-          ),
-      }).pipe(
-        switchMap(({ kramerius, local }) => {
-          const base: PidCheckResult = {
-            pid,
-            kramerius: kramerius ?? null,
-            local,
-          };
-          if (kramerius?.model === 'page' && !local) {
-            return this.service.fetchActiveAltoVersion(pid).pipe(
-              map((av) => ({ ...base, altoVersion: av })),
-              catchError(() => of({ ...base, altoVersion: null })),
-            );
-          }
-          return of(base);
-        }),
-      ),
+    }).pipe(
+      switchMap(({ kramerius, local }) => {
+        const base: PidCheckResult = {
+          pid,
+          kramerius: kramerius ?? null,
+          local,
+        };
+        if (kramerius?.model === 'page' && !local) {
+          return this.service.fetchActiveAltoVersion(pid).pipe(
+            map((av) => ({ ...base, altoVersion: av })),
+            catchError(() => of({ ...base, altoVersion: null })),
+          );
+        }
+        return of(base);
+      }),
     );
-    forkJoin(tasks).subscribe({
-      next: (results) => {
-        this.pidResults = results;
-        this.loadingPids = false;
-        this.isPidSearchMode = true;
-        this.showPidInput = false;
-        this.expandedPidChildren.clear();
-      },
-      error: () => (this.loadingPids = false),
-    });
   }
 
   togglePidSubtree(r: PidCheckResult, event: Event): void {

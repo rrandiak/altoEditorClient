@@ -78,6 +78,7 @@
   },
   "action": {
     "addOrCheckPids": "Add / check PIDs",
+    "checkingPid": "Checking {{current}} / {{total}}",
     "backToLocalDocuments": "Back to local documents",
     "generateAlto": "Generate ALTO",
     "fetchFromKramerius": "Fetch from Kramerius",

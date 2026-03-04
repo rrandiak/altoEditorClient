@@ -78,6 +78,7 @@
   },
   "action": {
     "addOrCheckPids": "Přidat / zkontrolovat PIDy",
+    "checkingPid": "Kontroluji {{current}} / {{total}}",
     "backToLocalDocuments": "Zpět na lokální dokumenty",
     "generateAlto": "Vygenerovat ALTO",
     "fetchFromKramerius": "Načíst z Krameria",

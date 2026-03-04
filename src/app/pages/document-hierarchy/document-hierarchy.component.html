@@ -12,7 +12,7 @@
     <div class="app-hierarchy-toolbar app-p-2 app-border-wrapper">
       <div class="app-mb-2 app-fxLayout-row app-fxLayout-center-v" style="gap: 0.5rem; flex-wrap: wrap;">
         <button
-          *ngIf="isPidSearchMode"
+          *ngIf="isPidSearchMode || loadingPids"
           mat-stroked-button
           (click)="backToLocal()"
           type="button"
@@ -24,9 +24,11 @@
           mat-stroked-button
           (click)="togglePidInput()"
           type="button"
+          [disabled]="loadingPids"
         >
-          <mat-icon>{{ showPidInput ? 'expand_less' : 'expand_more' }}</mat-icon>
-          {{ 'action.addOrCheckPids' | translate }}
+          <mat-icon *ngIf="!loadingPids">{{ showPidInput ? 'expand_less' : 'expand_more' }}</mat-icon>
+          <ng-container *ngIf="!loadingPids">{{ 'action.addOrCheckPids' | translate }}</ng-container>
+          <ng-container *ngIf="loadingPids">{{ 'action.checkingPid' | translate:{ current: checkingPidCurrent, total: checkingPidTotal } }}</ng-container>
         </button>
         <ng-container *ngIf="!isLoading && selectedCount > 0 && (generateEligibleCount > 0 || fetchEligibleCount > 0 || acceptEligibleCount > 0)">
           <button
@@ -71,7 +73,7 @@
           </span>
         </ng-container>
       </div>
-      <div *ngIf="showPidInput" class="app-mb-2 app-p-2 app-border-wrapper">
+      <div *ngIf="showPidInput && !loadingPids" class="app-mb-2 app-p-2 app-border-wrapper">
         <mat-form-field class="app-w-100" appearance="outline">
           <mat-label>{{ 'placeholder.pids' | translate }}</mat-label>
           <textarea
@@ -84,7 +86,7 @@
           mat-raised-button
           color="primary"
           (click)="checkPids()"
-          [disabled]="loadingPids || !pids.length"
+          [disabled]="!pids.length"
         >
           {{ 'button.check' | translate }}
         </button>
@@ -93,8 +95,8 @@
 
     <!-- Scrollable table area -->
     <div class="app-table-scroll-inner app-p-2 app-border-wrapper">
-      <!-- Loading -->
-      <div *ngIf="isLoading" class="app-p-2">{{ 'placeholder.loading' | translate }}</div>
+      <!-- Loading (only when loading local table, not when checking PIDs) -->
+      <div *ngIf="isLoading && !isPidSearchMode" class="app-p-2">{{ 'placeholder.loading' | translate }}</div>
 
       <!-- Local browse table -->
       <ng-container *ngIf="!isLoading && !isPidSearchMode">
@@ -262,8 +264,8 @@
         <div *ngIf="localLevel0.length === 0" class="app-p-2 app-muted">{{ 'placeholder.noLocalDocuments' | translate }}</div>
       </ng-container>
 
-      <!-- PID search results table (Kramerius + local) -->
-      <ng-container *ngIf="!isLoading && isPidSearchMode">
+      <!-- PID search results table (Kramerius + local); show while loading so results stream in -->
+      <ng-container *ngIf="isPidSearchMode">
         <table mat-table [dataSource]="bothTableRows" class="app-w-100 app-striped app-hover app-pid-table">
           <ng-container matColumnDef="select">
             <th mat-header-cell *matHeaderCellDef>
