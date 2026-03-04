@@ -5,6 +5,7 @@ import { map } from 'rxjs/operators';
 import { RightAction } from './shared/right-action.model';
 import { Router } from '@angular/router';
 import { AppConfiguration } from './app-configuration';
+import { AppService } from './app.service';
 import { AppState } from './shared/app.state';
 import { User } from './shared/user.model';
 import { BatchPollingService } from './shared/batch-polling.service';
@@ -35,6 +36,7 @@ export class AuthService {
     private settings: AppConfiguration,
     private router: Router,
     private appState: AppState,
+    private appService: AppService,
     private batchPolling: BatchPollingService,
   ) {
     AuthService.token = localStorage.getItem('account.token');
@@ -92,6 +94,7 @@ export class AuthService {
 
   logout(suffix: string = '') {
     this.batchPolling.stop();
+    this.appService.resetSessionLoadCache();
     AuthService.token = null;
     AuthService.tokenTime = null;
     AuthService.tokenDeadline = null;

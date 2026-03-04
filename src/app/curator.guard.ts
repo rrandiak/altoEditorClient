@@ -24,7 +24,7 @@ export class CuratorGuard implements CanActivate {
     if (this.appState.currentUser?.isCurator) {
       return of(true);
     }
-    return this.appService.loadSession().pipe(
+    return this.appService.ensureSession().pipe(
       map(() => !!this.appState.currentUser?.isCurator),
       map((allowed) => {
         if (!allowed) {

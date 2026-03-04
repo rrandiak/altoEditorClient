@@ -21,7 +21,7 @@ export class AuthGuard implements CanActivate {
     canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Observable<boolean>|boolean {
       return Observable.create((observer: any) => {
         if (this.auth.isAuthorized()) {
-          this.appService.loadSession().pipe(
+          this.appService.ensureSession().pipe(
             tap(() => this.batchPolling.start()),
           ).subscribe();
           observer.next(true);
@@ -29,7 +29,7 @@ export class AuthGuard implements CanActivate {
         } else {
           this.auth.checkToken((status: number) => {
             if (status == AuthService.AUTH_AUTHORIZED) {
-              this.appService.loadSession().pipe(
+              this.appService.ensureSession().pipe(
                 tap(() => this.batchPolling.start()),
               ).subscribe();
               observer.next(true);

@@ -1,7 +1,7 @@
 import { isPlatformBrowser } from '@angular/common';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Observable, of } from 'rxjs';
 import { forkJoin } from 'rxjs';
 import { catchError, map, tap } from 'rxjs/operators';
 import { TranslateService } from '@ngx-translate/core';
@@ -44,10 +44,15 @@ function objectToParams<T extends object>(request: T): HttpParams {
   }, new HttpParams());
 }
 
+/** Minimum ms between session loads when navigating; load always on first access and after login. */
+const SESSION_LOAD_THROTTLE_MS = 5 * 60 * 1000;
+
 @Injectable({
   providedIn: 'root',
 })
 export class AppService {
+  private lastSessionLoadTime: number | null = null;
+
   constructor(
     private http: HttpClient,
     private translateService: TranslateService,
@@ -125,7 +130,7 @@ export class AppService {
     }).pipe(tap((pageable) => (this.appState.engineUsers = pageable.content)));
   }
 
-  /** Load current user + Kramerius users + engine users in parallel. Call after login and on guarded routes. */
+  /** Load current user + Kramerius users + engine users in parallel. Call after login; use ensureSession() in guards. */
   loadSession(): Observable<
     [CurrentUser, Pageable<UserInfo>, Pageable<UserInfo>]
   > {
@@ -133,7 +138,29 @@ export class AppService {
       this.loadCurrentUser(),
       this.loadKrameriusUsers(),
       this.loadEngineUsers(),
-    ]);
+    ]).pipe(tap(() => (this.lastSessionLoadTime = Date.now())));
+  }
+
+  /**
+   * Load session only if not loaded yet or last load was more than SESSION_LOAD_THROTTLE_MS ago.
+   * Use in guards so session is not refetched on every route change.
+   */
+  ensureSession(): Observable<
+    [CurrentUser, Pageable<UserInfo>, Pageable<UserInfo>] | undefined
+  > {
+    const now = Date.now();
+    if (
+      this.lastSessionLoadTime !== null &&
+      now - this.lastSessionLoadTime < SESSION_LOAD_THROTTLE_MS
+    ) {
+      return of(undefined);
+    }
+    return this.loadSession();
+  }
+
+  /** Clear session load cache so next ensureSession() will load again (e.g. after logout). */
+  resetSessionLoadCache(): void {
+    this.lastSessionLoadTime = null;
   }
 
   searchRelatedAltoVersions(
