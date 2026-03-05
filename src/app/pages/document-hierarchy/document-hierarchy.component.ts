@@ -1146,7 +1146,7 @@ export class DocumentHierarchyComponent implements OnInit {
     engine: UserInfo,
   ): AltoVersionSearchRequest {
     return {
-      targetPid: pid,
+      hierarchyPid: pid,
       users: [engine.id],
       states: [AltoVersionState.PENDING],
     };
