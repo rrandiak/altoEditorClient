@@ -32,16 +32,25 @@ import {
   TOP_MODELS,
 } from 'src/app/shared/digital-object';
 import { SearchResults } from 'src/app/shared/search-results';
-import { BatchPriority } from 'src/app/shared/batch';
+import { BatchPriority, HierarchyGenerateScope } from 'src/app/shared/batch';
 import { BatchPollingService } from 'src/app/shared/batch-polling.service';
 import {
   PlanProcessDialogComponent,
   PlanProcessDialogData,
 } from 'src/app/components/plan-process-dialog/plan-process-dialog.component';
+import {
+  GenerateForHierarchyDialogComponent,
+  GenerateForHierarchyDialogData,
+  GenerateForHierarchyDialogResult,
+} from 'src/app/components/generate-for-hierarchy-dialog/generate-for-hierarchy-dialog.component';
 import { UserInfo } from 'src/app/shared/user-info';
 import { forkJoin, of } from 'rxjs';
 import { catchError, map, switchMap } from 'rxjs/operators';
-import { AltoVersionContent } from 'src/app/shared/alto-version';
+import {
+  AltoVersionContent,
+  AltoVersionSearchRequest,
+  AltoVersionState,
+} from 'src/app/shared/alto-version';
 import { AppDateTimePipe } from 'src/app/shared/app-date-time.pipe';
 
 /** Kramerius can return childrenCount. */
@@ -472,15 +481,15 @@ export class DocumentHierarchyComponent implements OnInit {
         map((h) => h as KrameriusDOHierarchy | null),
         catchError(() => of(null)),
       ),
-      local: this.service
-        .searchDOHierarchy({ pid, limit: 1, offset: 0 })
-        .pipe(
-          map(
-            (p: SearchResults<DOHierarchy>) =>
-              (p.total && p.items?.length ? p.items[0] : null) as DOHierarchy | null,
-          ),
-          catchError(() => of(null)),
+      local: this.service.searchDOHierarchy({ pid, limit: 1, offset: 0 }).pipe(
+        map(
+          (p: SearchResults<DOHierarchy>) =>
+            (p.total && p.items?.length
+              ? p.items[0]
+              : null) as DOHierarchy | null,
         ),
+        catchError(() => of(null)),
+      ),
     }).pipe(
       switchMap(({ kramerius, local }) => {
         const base: PidCheckResult = {
@@ -641,21 +650,18 @@ export class DocumentHierarchyComponent implements OnInit {
     event: Event,
   ): void {
     event.stopPropagation();
-    this.dialog
-      .open(PlanProcessDialogComponent, {
-        data: {
-          title:
-            doc.model === 'page'
-              ? 'actionTitle.generateSinglePageAlto'
-              : 'actionTitle.generateForHierarchy',
-          titleParams: { engine: engine.username },
-        } as PlanProcessDialogData,
-        width: '320px',
-      })
-      .afterClosed()
-      .subscribe((result) => {
-        if (result?.priority) {
-          if (doc.model === 'page') {
+    if (doc.model === 'page') {
+      this.dialog
+        .open(PlanProcessDialogComponent, {
+          data: {
+            title: 'actionTitle.generateSinglePageAlto',
+            titleParams: { engine: engine.username },
+          } as PlanProcessDialogData,
+          width: '320px',
+        })
+        .afterClosed()
+        .subscribe((result) => {
+          if (result?.priority) {
             this.service
               .generateAlto(
                 doc.pid,
@@ -677,20 +683,39 @@ export class DocumentHierarchyComponent implements OnInit {
                     true,
                   ),
               });
-          } else {
-            this.planGenerateForHierarchy(doc.pid, engine, result.priority);
           }
-        }
-      });
+        });
+    } else {
+      this.dialog
+        .open(GenerateForHierarchyDialogComponent, {
+          data: {
+            title: 'actionTitle.generateForHierarchy',
+            titleParams: { engine: engine.username },
+          } as GenerateForHierarchyDialogData,
+          width: '400px',
+        })
+        .afterClosed()
+        .subscribe((result: GenerateForHierarchyDialogResult | undefined) => {
+          if (result) {
+            this.planGenerateForHierarchy(
+              doc.pid,
+              engine,
+              result.priority,
+              result.scope,
+            );
+          }
+        });
+    }
   }
 
   planGenerateForHierarchy(
     pid: string,
     engine: UserInfo,
     priority: BatchPriority,
+    scope?: HierarchyGenerateScope,
   ): void {
     this.service
-      .planGenerateForHierarchy(pid, engine.username, priority)
+      .planGenerateForHierarchy(pid, engine.username, priority, scope)
       .subscribe({
         next: () => {
           this.batchPolling.triggerCheck();
@@ -724,13 +749,14 @@ export class DocumentHierarchyComponent implements OnInit {
       .afterClosed()
       .subscribe((result) => {
         if (result?.priority) {
+          const request = this.buildAcceptSearchRequest(pid, engine);
           this.service
-            .planAcceptEngineVersions(pid, engine.username, result.priority)
+            .planAcceptAltoVersions(request, result.priority)
             .subscribe({
               next: () => {
                 this.batchPolling.triggerCheck();
                 this.service.showSnackBar(
-                  'message.acceptEngineVersionsPlanned',
+                  'message.acceptVersionsPlanned',
                   false,
                 );
               },
@@ -921,28 +947,78 @@ export class DocumentHierarchyComponent implements OnInit {
           const doc = this.localTableRows.find((d) => d.pid === pid);
           return doc?.model === 'page';
         };
-    this.dialog
-      .open(PlanProcessDialogComponent, {
-        data: {
-          title:
-            pids.length === 1 && isPage(pids[0])
-              ? 'actionTitle.generateSinglePageAlto'
-              : 'actionTitle.generateForHierarchy',
-          titleParams: { engine: engine.username },
-        } as PlanProcessDialogData,
-        width: '320px',
-      })
-      .afterClosed()
-      .subscribe((result) => {
-        if (result?.priority) {
-          this.batchGenerate(pids, engine.username, result.priority, isPage);
-        }
-      });
+    const hasHierarchy = pids.some((pid) => !isPage(pid));
+    const singlePage = pids.length === 1 && isPage(pids[0]);
+    if (singlePage) {
+      this.dialog
+        .open(PlanProcessDialogComponent, {
+          data: {
+            title: 'actionTitle.generateSinglePageAlto',
+            titleParams: { engine: engine.username },
+          } as PlanProcessDialogData,
+          width: '320px',
+        })
+        .afterClosed()
+        .subscribe((result) => {
+          if (result?.priority) {
+            this.batchGenerate(
+              pids,
+              engine.username,
+              result.priority,
+              undefined,
+              isPage,
+            );
+          }
+        });
+    } else if (hasHierarchy) {
+      this.dialog
+        .open(GenerateForHierarchyDialogComponent, {
+          data: {
+            title: 'actionTitle.generateForHierarchy',
+            titleParams: { engine: engine.username },
+          } as GenerateForHierarchyDialogData,
+          width: '400px',
+        })
+        .afterClosed()
+        .subscribe((result: GenerateForHierarchyDialogResult | undefined) => {
+          if (result) {
+            this.batchGenerate(
+              pids,
+              engine.username,
+              result.priority,
+              result.scope,
+              isPage,
+            );
+          }
+        });
+    } else {
+      this.dialog
+        .open(PlanProcessDialogComponent, {
+          data: {
+            title: 'actionTitle.generateSinglePageAlto',
+            titleParams: { engine: engine.username },
+          } as PlanProcessDialogData,
+          width: '320px',
+        })
+        .afterClosed()
+        .subscribe((result) => {
+          if (result?.priority) {
+            this.batchGenerate(
+              pids,
+              engine.username,
+              result.priority,
+              undefined,
+              isPage,
+            );
+          }
+        });
+    }
   }
   private batchGenerate(
     pids: string[],
     engine: string,
     priority: BatchPriority,
+    scope: HierarchyGenerateScope | undefined,
     isPage: (pid: string) => boolean,
   ): void {
     this.batchProgress = { planned: 0, total: pids.length };
@@ -965,7 +1041,7 @@ export class DocumentHierarchyComponent implements OnInit {
       const doPage = isPage(pid);
       const obs = doPage
         ? this.service.generateAlto(pid, engine, priority, this.config.instance)
-        : this.service.planGenerateForHierarchy(pid, engine, priority);
+        : this.service.planGenerateForHierarchy(pid, engine, priority, scope);
       obs.subscribe({
         next: () => {
           this.batchProgress = { planned: done + 1, total: pids.length };
@@ -1059,13 +1135,26 @@ export class DocumentHierarchyComponent implements OnInit {
       .afterClosed()
       .subscribe((result) => {
         if (result?.priority) {
-          this.batchAccept(pids, engine.username, result.priority);
+          this.batchAccept(pids, engine, result.priority);
         }
       });
   }
+
+  /** Builds search request for accept: targetPid, users, states = [PENDING] only. */
+  private buildAcceptSearchRequest(
+    pid: string,
+    engine: UserInfo,
+  ): AltoVersionSearchRequest {
+    return {
+      targetPid: pid,
+      users: [engine.id],
+      states: [AltoVersionState.PENDING],
+    };
+  }
+
   private batchAccept(
     pids: string[],
-    engine: string,
+    engine: UserInfo,
     priority: BatchPriority,
   ): void {
     this.batchProgress = { planned: 0, total: pids.length };
@@ -1081,22 +1170,21 @@ export class DocumentHierarchyComponent implements OnInit {
         this.selectedBothPids = new Set();
         return;
       }
-      this.service
-        .planAcceptEngineVersions(pids[i], engine, priority)
-        .subscribe({
-          next: () => {
-            this.batchProgress = { planned: done + 1, total: pids.length };
-            done++;
-            run(i + 1);
-          },
-          error: (err) => {
-            this.batchProgress = null;
-            this.service.showSnackBar(
-              err?.error?.message || 'message.error',
-              true,
-            );
-          },
-        });
+      const searchRequest = this.buildAcceptSearchRequest(pids[i], engine);
+      this.service.planAcceptAltoVersions(searchRequest, priority).subscribe({
+        next: () => {
+          this.batchProgress = { planned: done + 1, total: pids.length };
+          done++;
+          run(i + 1);
+        },
+        error: (err) => {
+          this.batchProgress = null;
+          this.service.showSnackBar(
+            err?.error?.message || 'message.error',
+            true,
+          );
+        },
+      });
     };
     run(0);
   }

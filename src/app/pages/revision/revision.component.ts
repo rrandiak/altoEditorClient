@@ -37,8 +37,14 @@ import {
   ConfirmDialogComponent,
   ConfirmDialogData,
 } from 'src/app/components/confirm-dialog/confirm-dialog.component';
+import {
+  AcceptAllVersionsDialogComponent,
+  AcceptAllVersionsDialogResult,
+} from 'src/app/components/accept-all-versions-dialog/accept-all-versions-dialog.component';
 import { AppDateTimePipe } from 'src/app/shared/app-date-time.pipe';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { BatchPriority } from 'src/app/shared/batch';
+import { BatchPollingService } from 'src/app/shared/batch-polling.service';
 
 @Component({
   selector: 'app-revision',
@@ -114,6 +120,7 @@ export class RevisionComponent {
     private revisionListState: RevisionListStateService,
     private translate: TranslateService,
     private dialog: MatDialog,
+    private batchPolling: BatchPollingService,
   ) {}
 
   ngOnInit(): void {
@@ -188,6 +195,17 @@ export class RevisionComponent {
     if (this.pidFilter?.trim()) {
       request.hierarchyPid = this.pidFilter.trim();
     }
+    return request;
+  }
+
+  /** Search request for accept-all: same filters as current, but states = [state] and no pagination (high limit). */
+  buildAcceptAllSearchRequest(
+    state: AltoVersionState.ACTIVE | AltoVersionState.PENDING,
+  ): AltoVersionSearchRequest {
+    const request = this.buildSearchRequest();
+    request.states = [state];
+    request.offset = 0;
+    request.limit = 10000;
     return request;
   }
 
@@ -307,6 +325,32 @@ export class RevisionComponent {
     return this.selectedRevisions.filter(
       (r) => r.state === AltoVersionState.PENDING,
     ).length;
+  }
+
+  acceptAllVersions(): void {
+    this.dialog
+      .open(AcceptAllVersionsDialogComponent, {
+        data: {},
+        width: '420px',
+      })
+      .afterClosed()
+      .subscribe((result: AcceptAllVersionsDialogResult | undefined) => {
+        if (result) {
+          const request = this.buildAcceptAllSearchRequest(result.state);
+          this.service.planAcceptAltoVersions(request, result.priority).subscribe({
+            next: () => {
+              this.batchPolling.triggerCheck();
+              this.service.showSnackBar('message.acceptVersionsPlanned', false);
+              this.search();
+            },
+            error: (err) =>
+              this.service.showSnackBar(
+                err?.error?.errors?.[0] ?? err?.error?.message ?? 'message.error',
+                true,
+              ),
+          });
+        }
+      });
   }
 
   batchAccept(): void {

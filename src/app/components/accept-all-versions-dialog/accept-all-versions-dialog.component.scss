@@ -1,0 +1,27 @@
+.app-dialog-content {
+  padding-top: 16px;
+  overflow: visible;
+  min-height: 72px;
+}
+
+.app-message {
+  margin: 0 0 16px;
+  color: rgba(0, 0, 0, 0.7);
+}
+
+.app-radio-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.app-state-message {
+  margin: 0 0 16px;
+  font-size: 14px;
+  color: rgba(0, 0, 0, 0.87);
+}
+
+mat-form-field.app-w-100 {
+  width: 100%;
+}

@@ -44,6 +44,7 @@
     "state": "State",
     "priority": "Priority",
     "withPriority": "With priority",
+    "generateScope": "Scope for hierarchy",
     "location": "Location",
     "model": "Model",
     "pagesCount": "Pages count",
@@ -74,7 +75,10 @@
     "all": "All",
     "acceptSuccess": "Version accepted",
     "rejectSuccess": "Version rejected",
-    "archiveSuccess": "Version archived"
+    "archiveSuccess": "Version archived",
+    "includePendingVersions": "Include pending versions",
+    "includeActiveVersions": "Include active versions",
+    "acceptVersionsAtLeastOne": "Select at least one: pending or active versions."
   },
   "action": {
     "addOrCheckPids": "Add / check PIDs",
@@ -84,7 +88,8 @@
     "fetchFromKramerius": "Fetch from Kramerius",
     "acceptEngineVersions": "Accept engine versions",
     "viewRevisions": "View revisions",
-    "reindex": "Reindex all"
+    "reindex": "Reindex all",
+    "acceptAllVersions": "Accept all versions"
   },
   "actionTitle": {
     "fetchFromKramerius": "Fetch document hierarchy and ALTO versions from Kramerius",
@@ -95,11 +100,15 @@
   },
   "message": {
     "altoVersionSaved": "ALTO version saved",
-    "processCompleted": "{{type}} for {{pid}} completed",
-    "processFailed": "{{type}} for {{pid}} failed",
+    "processCompleted": "{{type}} completed",
+    "processFailed": "{{type}} failed",
+    "processCompletedPid": "{{type}} for {{pid}} completed",
+    "processFailedPid": "{{type}} for {{pid}} failed",
     "altoVersionGenerationPlanned": "ALTO version generation planned",
     "hierarchyFetchPlanned": "Document hierarchy fetch planned",
-    "acceptEngineVersionsPlanned": "Accept engine versions planned",
+    "acceptVersionsPlanned": "Accept versions planned",
+    "acceptAllVersionsExplain": "All results in the table that are in the selected state will be accepted.",
+    "acceptAllVersionsState": "All results that are in {{state}} state will be accepted.",
     "reindexPlanned": "Reindex planned",
     "error": "An unknown error occurred",
     "confirmAccept": "Accept {{count}} version(s)?",
@@ -156,12 +165,17 @@
     "MEDIUM": "Medium",
     "HIGH": "High"
   },
+  "hierarchyGenerateScope": {
+    "ALL": "All pages",
+    "NO_PENDING": "Skip pages with pending version",
+    "NO_PENDING_NOR_ACTIVE": "Skip pages with pending or active version"
+  },
   "processType": {
     "GENERATE_SINGLE": "Generate for single page",
     "GENERATE_FOR_HIERARCHY": "Generate for hierarchy",
     "RETRIEVE_HIERARCHY": "Retrieve hierarchy",
     "REINDEX": "Reindex",
-    "ACCEPT_ENGINE_VERSIONS": "Accept engine versions"
+    "ACCEPT_VERSIONS": "Accept versions"
   },
   "location": {
     "local": "AltoEditor",

@@ -1,3 +1,5 @@
+import { AltoVersionSearchRequest } from './alto-version';
+
 export enum BatchPriority {
   LOW = 'LOW',
   MEDIUM = 'MEDIUM',
@@ -21,8 +23,24 @@ export enum BatchType {
   GENERATE_SINGLE = 'GENERATE_SINGLE',
   RETRIEVE_HIERARCHY = 'RETRIEVE_HIERARCHY',
   GENERATE_FOR_HIERARCHY = 'GENERATE_FOR_HIERARCHY',
-  ACCEPT_ENGINE_VERSIONS = 'ACCEPT_ENGINE_VERSIONS',
+  ACCEPT_VERSIONS = 'ACCEPT_VERSIONS',
   REINDEX = 'REINDEX',
+}
+
+export enum HierarchyGenerateScope {
+  ALL = 'ALL',
+  NO_PENDING = 'NO_PENDING',
+  NO_PENDING_NOR_ACTIVE = 'NO_PENDING_NOR_ACTIVE',
+}
+
+export interface HierarchyGenerateData {
+  scope: HierarchyGenerateScope;
+}
+
+export interface PlanAcceptVersionsRequest {
+  priority: BatchPriority;
+  includePendingVersions: boolean;
+  includeActiveVersions: boolean;
 }
 
 export interface BatchSearchFilters {
@@ -41,6 +59,7 @@ export interface BatchSearchFilters {
   priority?: BatchPriority | string;
   type?: BatchType | string;
   instance?: string;
+  data?: HierarchyGenerateData | AltoVersionSearchRequest;
 }
 
 export interface Batch {

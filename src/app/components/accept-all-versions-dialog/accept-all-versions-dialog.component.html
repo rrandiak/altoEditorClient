@@ -1,0 +1,29 @@
+<h2 mat-dialog-title>{{ 'action.acceptAllVersions' | translate }}</h2>
+<mat-dialog-content class="app-dialog-content">
+  <p class="app-message">{{ 'message.acceptAllVersionsExplain' | translate }}</p>
+  <mat-radio-group [(ngModel)]="selectedState" class="app-radio-group">
+    <mat-radio-button [value]="AltoVersionState.ACTIVE">
+      {{ 'versionState.ACTIVE' | translate }}
+    </mat-radio-button>
+    <mat-radio-button [value]="AltoVersionState.PENDING">
+      {{ 'versionState.PENDING' | translate }}
+    </mat-radio-button>
+  </mat-radio-group>
+  <p class="app-state-message">
+    {{ 'message.acceptAllVersionsState' | translate : { state: stateLabel } }}
+  </p>
+  <mat-form-field appearance="outline" class="app-w-100">
+    <mat-label>{{ 'desc.withPriority' | translate }}</mat-label>
+    <mat-select [(ngModel)]="selectedPriority">
+      <mat-option *ngFor="let p of priorities" [value]="p">
+        {{ 'processPriority.' + p | translate }}
+      </mat-option>
+    </mat-select>
+  </mat-form-field>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+  <button mat-button (click)="onCancel()">{{ 'button.cancel' | translate }}</button>
+  <button mat-flat-button color="primary" (click)="onConfirm()">
+    {{ 'button.run' | translate }}
+  </button>
+</mat-dialog-actions>

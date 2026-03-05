@@ -44,6 +44,7 @@
     "state": "Stav",
     "priority": "Priorita",
     "withPriority": "S prioritou",
+    "generateScope": "Rozsah pro hierarchii",
     "location": "Umístění",
     "model": "Model",
     "pagesCount": "Počet stránek",
@@ -74,7 +75,10 @@
     "all": "Vše",
     "acceptSuccess": "Verze přijata",
     "rejectSuccess": "Verze odmítnuta",
-    "archiveSuccess": "Verze archivována"
+    "archiveSuccess": "Verze archivována",
+    "includePendingVersions": "Zahrnout čekající verze",
+    "includeActiveVersions": "Zahrnout aktivní verze",
+    "acceptVersionsAtLeastOne": "Vyberte alespoň jednu možnost: čekající nebo aktivní verze."
   },
   "action": {
     "addOrCheckPids": "Přidat / zkontrolovat PIDy",
@@ -84,22 +88,27 @@
     "fetchFromKramerius": "Načíst z Krameria",
     "acceptEngineVersions": "Přijmout verze engine",
     "viewRevisions": "Zobrazit revize",
-    "reindex": "Vše reindexovat"
+    "reindex": "Vše reindexovat",
+    "acceptAllVersions": "Přijmout všechny verze"
   },
   "actionTitle": {
     "fetchFromKramerius": "Načíst hierarchii dokumentů a ALTO verze z Krameria",
     "generateSinglePageAlto": "Vygenerovat ALTO pro vybranou stránku s použitím engine {{engine}}",
     "generateForHierarchy": "Vygenerovat ALTO pro všechny stránky ve vybrané hierarchii s použitím engine {{engine}}",
-    "acceptEngineVersions": "Přijmout verze engine pro hierarchii s použitím engine {{engine}}",
+    "acceptEngineVersions": "Přijmout verze engine pro vybranou hierarchii a pro engine {{engine}}",
     "reindex": "Smazat a znovu vybudovat všechny indexy"
   },
   "message": {
     "altoVersionSaved": "ALTO verze uložena",
-    "processCompleted": "{{type}} pro {{pid}} dokončeno",
-    "processFailed": "{{type}} pro {{pid}} selhalo",
+    "processCompleted": "{{type}} dokončeno",
+    "processFailed": "{{type}} selhalo",
+    "processCompletedPid": "{{type}} pro {{pid}} dokončeno",
+    "processFailedPid": "{{type}} pro {{pid}} selhalo",
     "altoVersionGenerationPlanned": "Vygenerování ALTO verze naplánováno",
     "hierarchyFetchPlanned": "Načtení hierarchie dokumentů naplánováno",
-    "acceptEngineVersionsPlanned": "Přijetí verzí engine naplánováno",
+    "acceptVersionsPlanned": "Přijetí verzí naplánováno",
+    "acceptAllVersionsExplain": "Všechny výsledky v tabulce, které jsou ve zvoleném stavu, budou přijaty.",
+    "acceptAllVersionsState": "Všechny výsledky ve stavu {{state}} budou přijaty.",
     "reindexPlanned": "Reindexace naplánována",
     "error": "Nastala neznámá chyba",
     "confirmAccept": "Přijmout {{count}} verzi/verzí?",
@@ -156,12 +165,17 @@
     "MEDIUM": "Střední",
     "HIGH": "Vysoká"
   },
+  "hierarchyGenerateScope": {
+    "ALL": "Všechny stránky",
+    "NO_PENDING": "Přeskočit stránky s čekající verzí",
+    "NO_PENDING_NOR_ACTIVE": "Přeskočit stránky s čekající nebo aktivní verzí"
+  },
   "processType": {
     "GENERATE_SINGLE": "Generování pro jednu stránku",
     "GENERATE_FOR_HIERARCHY": "Generování pro hierarchii",
     "RETRIEVE_HIERARCHY": "Načtení hierarchie",
     "REINDEX": "Reindexace",
-    "ACCEPT_ENGINE_VERSIONS": "Přijetí verzí engine"
+    "ACCEPT_VERSIONS": "Přijetí verzí"
   },
   "location": {
     "local": "AltoEditor",

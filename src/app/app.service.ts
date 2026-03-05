@@ -7,7 +7,7 @@ import { catchError, map, tap } from 'rxjs/operators';
 import { TranslateService } from '@ngx-translate/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { AppConfiguration } from './app-configuration';
-import { Batch, BatchPriority, BatchSearchFilters } from './shared/batch';
+import { Batch, BatchPriority, BatchSearchFilters, HierarchyGenerateScope } from './shared/batch';
 import { SearchResults } from './shared/search-results';
 import { AppState } from './shared/app.state';
 import {
@@ -289,6 +289,16 @@ export class AppService {
     return this.post(`/alto-versions/${id}/accept`, null);
   }
 
+  planAcceptAltoVersions(
+    request: AltoVersionSearchRequest,
+    priority: BatchPriority,
+  ): Observable<any> {
+    return this.post(
+      `/alto-versions/accept?priority=${priority}`,
+      request,
+    );
+  }
+
   rejectAltoVersion(id: number): Observable<any> {
     return this.post(`/alto-versions/${id}/reject`, null);
   }
@@ -323,28 +333,13 @@ export class AppService {
     pid: string,
     engine: string,
     priority: BatchPriority,
+    scope?: HierarchyGenerateScope,
   ): Observable<any> {
-    return this.post(
-      `/hierarchy/${pid}/generate-alto/${engine}?priority=${priority}`,
-      null,
-    );
-  }
-
-  // Plan process of accepting ALTO versions of all objects in the hierarchy
-  // specified by the PID from the given engine.
-  planAcceptEngineVersions(
-    pid: string,
-    engine: string,
-    priority?: BatchPriority,
-  ): Observable<any> {
-    const params = new HttpParams();
-    if (priority != null) {
-      params.set('priority', priority);
+    let url = `/hierarchy/${pid}/generate-alto/${engine}?priority=${priority}`;
+    if (scope) {
+      url += `&scope=${scope}`;
     }
-    return this.post(
-      `/hierarchy/${pid}/accept-engine-versions/${engine}`,
-      params,
-    );
+    return this.post(url, null);
   }
 
   planReindex(priority: BatchPriority): Observable<any> {

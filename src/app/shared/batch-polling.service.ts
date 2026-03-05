@@ -157,10 +157,12 @@ export class BatchPollingService implements OnDestroy {
 
   private showSnackbar(b: Batch) {
     const typeLabel = this.translate.instant(`processType.${b.type || BatchType.GENERATE_SINGLE}`);
-    const pid = b.pid || '—';
     const isFailed = this.norm(b.state) === BatchState.FAILED;
-    const key = isFailed ? 'message.processFailed' : 'message.processCompleted';
-    const msg = this.translate.instant(key, { type: typeLabel, pid });
-    this.appService.showSnackBar(msg, isFailed);
+    const withPid = !!b.pid;
+    const key = isFailed
+      ? (withPid ? 'message.processFailedPid' : 'message.processFailed')
+      : (withPid ? 'message.processCompletedPid' : 'message.processCompleted');
+    const params = withPid ? { type: typeLabel, pid: b.pid } : { type: typeLabel };
+    this.appService.showSnackBar(this.translate.instant(key, params), isFailed);
   }
 }

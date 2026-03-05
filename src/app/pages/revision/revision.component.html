@@ -24,6 +24,12 @@
         [disabled]="rejectArchiveEligibleCount === 0 || batchProgress !== null"
         [matTooltip]="'button.archive' | translate"
       >{{ 'button.archive' | translate }}{{ rejectArchiveEligibleCount > 0 ? ' (' + rejectArchiveEligibleCount + ')' : '' }}</button>
+      <button
+        mat-button
+        (click)="acceptAllVersions()"
+        [disabled]="batchProgress !== null"
+        [matTooltip]="'action.acceptAllVersions' | translate"
+      >{{ 'action.acceptAllVersions' | translate }}</button>
       <span *ngIf="batchProgress" style="font-size: 0.9em; color: #666;">
         {{ batchProgress.done }} / {{ batchProgress.total }}
       </span>
