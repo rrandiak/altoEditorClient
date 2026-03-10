@@ -222,4 +222,14 @@ export class ProcessManagementComponent implements OnDestroy {
     if (total == null || total <= 0 || done == null || done < 0) return null;
     return Math.min(100, (done / total) * 100);
   }
+
+  /** Tooltip for progress gauge: percent and "processed / estimated". */
+  getProgressTooltip(batch: Batch): string {
+    const pct = this.getProgressPercent(batch);
+    const done = batch.processedItemCount ?? 0;
+    const total = batch.estimatedItemCount ?? 0;
+    if (pct == null) return '';
+    const pctStr = pct.toFixed(2) + '%';
+    return `${pctStr} (${done} / ${total})`;
+  }
 }
