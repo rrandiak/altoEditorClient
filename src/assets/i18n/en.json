@@ -113,7 +113,8 @@
     "error": "An unknown error occurred",
     "confirmAccept": "Accept {{count}} version(s)?",
     "confirmReject": "Reject {{count}} version(s)?",
-    "confirmArchive": "Archive {{count}} version(s)?"
+    "confirmArchive": "Archive {{count}} version(s)?",
+    "processedItemsCount": "{{count}} items processed"
   },
   "placeholder": {
     "pids": "One PID per line",

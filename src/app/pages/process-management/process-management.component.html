@@ -136,7 +136,7 @@
           </th>
           <td mat-cell *matCellDef="let element" (click)="filter('state', element.state)">
             <div class="app-state-cell" [class.app-state-cell--running]="element.state === 'RUNNING'">
-              <span *ngIf="element.state" class="app-badge" [ngClass]="'app-' + element.state" [matTooltip]="element.log ?? ''">{{ 'processState.' + element.state | translate }}</span>
+              <span *ngIf="element.state" class="app-badge" [ngClass]="'app-' + element.state" [matTooltip]="getStateTooltip(element)">{{ 'processState.' + element.state | translate }}</span>
               <span *ngIf="element.substate" class="app-badge" [ngClass]="'app-' + element.substate">{{ 'processSubstate.' + element.substate | translate }}</span>
               <span *ngIf="(element.estimatedItemCount ?? 0) > 0 && getProgressPercent(element) !== null && (element.state === 'RUNNING' || element.state === 'FAILED')" class="app-progress-gauge-wrapper" (click)="$event.stopPropagation()" [matTooltip]="getProgressTooltip(element)" matTooltipPosition="above">
                 <svg class="app-progress-gauge" [attr.aria-label]="getProgressTooltip(element)" viewBox="0 0 24 24">

@@ -113,7 +113,8 @@
     "error": "Nastala neznámá chyba",
     "confirmAccept": "Přijmout {{count}} verzi/verzí?",
     "confirmReject": "Odmítnout {{count}} verzi/verzí?",
-    "confirmArchive": "Archivovat {{count}} verzi/verzí?"
+    "confirmArchive": "Archivovat {{count}} verzi/verzí?",
+    "processedItemsCount": "Zpracováno {{count}} položek"
   },
   "placeholder": {
     "pids": "Jeden PID na řádek",

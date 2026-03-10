@@ -1,7 +1,7 @@
 import { Component, Inject, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { ActivatedRoute, RouterLink } from '@angular/router';
@@ -114,6 +114,7 @@ export class ProcessManagementComponent implements OnDestroy {
     private route: ActivatedRoute,
     private config: AppConfiguration,
     private service: AppService,
+    private translate: TranslateService,
   ) {}
 
   ngOnInit() {
@@ -221,6 +222,16 @@ export class ProcessManagementComponent implements OnDestroy {
     const done = batch.processedItemCount;
     if (total == null || total <= 0 || done == null || done < 0) return null;
     return Math.min(100, (done / total) * 100);
+  }
+
+  /** Tooltip for state badge: when DONE and processedItemCount > 0, show translated message; else show log. */
+  getStateTooltip(batch: Batch): string {
+    if (batch.state === 'DONE' && (batch.processedItemCount ?? 0) > 0) {
+      return this.translate.instant('message.processedItemsCount', {
+        count: batch.processedItemCount,
+      });
+    }
+    return batch.log ?? '';
   }
 
   /** Tooltip for progress gauge: percent and "processed / estimated". */
