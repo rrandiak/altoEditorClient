@@ -205,6 +205,65 @@ export class DocumentHierarchyComponent implements OnInit {
     return out;
   }
 
+  /** Both mode: all tree rows without filters (for facet counts). */
+  get bothTableRowsUnfiltered(): PidCheckResult[] {
+    const out: PidCheckResult[] = [];
+    const append = (rows: PidCheckResult[]) => {
+      for (const r of rows) {
+        out.push(r);
+        const children = this.expandedPidChildren.get(r.pid);
+        if (children?.length) append(children);
+      }
+    };
+    append(this.pidResults);
+    return out;
+  }
+
+  /** Location bucket for one row (for facet count). */
+  private rowLocation(r: PidCheckResult): 'both' | 'kramerius' | 'local' | 'notFound' {
+    const hasK = !!r.kramerius;
+    const hasL = this.hasLocalOrAlto(r);
+    if (this.isNotFound(r)) return 'notFound';
+    if (hasK && hasL) return 'both';
+    if (hasK) return 'kramerius';
+    return 'local';
+  }
+
+  getBothLocationCount(opt: string): number {
+    return this.bothTableRowsUnfiltered.filter((r) => this.rowLocation(r) === opt).length;
+  }
+
+  getBothModelCount(m: string): number {
+    return this.bothTableRowsUnfiltered.filter(
+      (r) => r.kramerius?.model === m || r.local?.model === m
+    ).length;
+  }
+
+  getBothLevelCount(l: number): number {
+    return this.bothTableRowsUnfiltered.filter((r) => {
+      if (this.isNotFound(r)) return false;
+      if (r.kramerius != null && Number(r.kramerius.level) !== l) return false;
+      if (r.local != null && Number(r.local.level) !== l) return false;
+      return true;
+    }).length;
+  }
+
+  getBothPagesCountFilterCount(opt: string): number {
+    return this.bothTableRowsUnfiltered.filter((r) => {
+      const kPages = (r.kramerius as KrameriusDOHierarchy)?.pagesCount ?? 0;
+      const lPages = r.local?.pagesCount ?? 0;
+      return this.matchPagesFilter(lPages, kPages, opt);
+    }).length;
+  }
+
+  getBothAltoPagesCount(opt: string): number {
+    return this.bothTableRowsUnfiltered.filter((r) => {
+      const kPages = (r.kramerius as KrameriusDOHierarchy)?.pagesCount ?? 0;
+      const lAlto = r.local?.pagesWithAlto ?? 0;
+      return this.matchPagesFilter(lAlto, kPages, opt);
+    }).length;
+  }
+
   /** Whether row passes all both-table filters (client-side). */
   matchesBothRowFilters(r: PidCheckResult): boolean {
     if (this.bothLocationFilter) {

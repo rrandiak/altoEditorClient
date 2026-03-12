@@ -289,7 +289,7 @@
                 <mat-form-field class="app-header-filter" (click)="$event.stopPropagation()">
                   <mat-select [(ngModel)]="bothLocationFilter" (ngModelChange)="applyBothFilterLocation($event)"
                     panelClass="app-panel-table-header" [placeholder]="'desc.filterByLocation' | translate">
-                    <mat-option *ngFor="let opt of bothLocationOptions" [value]="opt">{{ 'filterLocation.' + opt | translate }}</mat-option>
+                    <mat-option *ngFor="let opt of bothLocationOptions" [value]="opt">{{ 'filterLocation.' + opt | translate }} ({{ getBothLocationCount(opt) }})</mat-option>
                   </mat-select>
                   <button mat-icon-button matIconSuffix color="warn" *ngIf="bothLocationFilter"
                     (click)="applyBothFilterLocation(''); bothLocationFilter = ''; $event.stopPropagation();"><mat-icon>clear</mat-icon></button>
@@ -343,7 +343,7 @@
                 <mat-form-field class="app-header-filter" (click)="$event.stopPropagation()">
                   <mat-select [(ngModel)]="bothModelFilter" (ngModelChange)="applyBothFilterModel($event)"
                     panelClass="app-panel-table-header" [placeholder]="'desc.filterByModel' | translate">
-                    <mat-option *ngFor="let m of bothModelOptions" [value]="m">{{ 'model.' + m | translate }}</mat-option>
+                    <mat-option *ngFor="let m of bothModelOptions" [value]="m">{{ 'model.' + m | translate }} ({{ getBothModelCount(m) }})</mat-option>
                   </mat-select>
                   <button mat-icon-button matIconSuffix color="warn" *ngIf="bothModelFilter"
                     (click)="applyBothFilterModel(''); bothModelFilter = ''; $event.stopPropagation();"><mat-icon>clear</mat-icon></button>
@@ -369,7 +369,7 @@
                 <mat-form-field class="app-header-filter" (click)="$event.stopPropagation()">
                   <mat-select [(ngModel)]="bothLevelFilter" (ngModelChange)="applyBothFilterLevel($event)"
                     panelClass="app-panel-table-header" [placeholder]="'desc.filterByLevel' | translate">
-                    <mat-option *ngFor="let l of bothLevelOptions" [value]="l">{{ l }}</mat-option>
+                    <mat-option *ngFor="let l of bothLevelOptions" [value]="l">{{ l }} ({{ getBothLevelCount(l) }})</mat-option>
                   </mat-select>
                   <button mat-icon-button matIconSuffix color="warn" *ngIf="bothLevelFilter !== ''"
                     (click)="applyBothFilterLevel(''); bothLevelFilter = ''; $event.stopPropagation();"><mat-icon>clear</mat-icon></button>
@@ -404,7 +404,7 @@
                 <mat-form-field class="app-header-filter" (click)="$event.stopPropagation()">
                   <mat-select [(ngModel)]="bothPagesCountFilter" (ngModelChange)="applyBothFilterPagesCount($event)"
                     panelClass="app-panel-table-header" [placeholder]="'desc.filterByPagesCount' | translate">
-                    <mat-option *ngFor="let opt of bothPagesFilterOptions" [value]="opt">{{ 'filterPagesCount.' + opt | translate }}</mat-option>
+                    <mat-option *ngFor="let opt of bothPagesFilterOptions" [value]="opt">{{ 'filterPagesCount.' + opt | translate }} ({{ getBothPagesCountFilterCount(opt) }})</mat-option>
                   </mat-select>
                   <button mat-icon-button matIconSuffix color="warn" *ngIf="bothPagesCountFilter"
                     (click)="applyBothFilterPagesCount(''); bothPagesCountFilter = ''; $event.stopPropagation();"><mat-icon>clear</mat-icon></button>
@@ -430,7 +430,7 @@
                 <mat-form-field class="app-header-filter" (click)="$event.stopPropagation()">
                   <mat-select [(ngModel)]="bothAltoPagesFilter" (ngModelChange)="applyBothFilterAltoPages($event)"
                     panelClass="app-panel-table-header" [placeholder]="'desc.filterByPagesWithAlto' | translate">
-                    <mat-option *ngFor="let opt of bothPagesFilterOptions" [value]="opt">{{ 'filterPagesWithAlto.' + opt | translate }}</mat-option>
+                    <mat-option *ngFor="let opt of bothPagesFilterOptions" [value]="opt">{{ 'filterPagesWithAlto.' + opt | translate }} ({{ getBothAltoPagesCount(opt) }})</mat-option>
                   </mat-select>
                   <button mat-icon-button matIconSuffix color="warn" *ngIf="bothAltoPagesFilter"
                     (click)="applyBothFilterAltoPages(''); bothAltoPagesFilter = ''; $event.stopPropagation();"><mat-icon>clear</mat-icon></button>
