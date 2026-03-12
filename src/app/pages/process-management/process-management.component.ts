@@ -41,6 +41,8 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatButtonModule } from '@angular/material/button';
 import { PaginatorI18n } from 'src/app/shared/paginator-i18n';
 import { AppDateTimePipe } from 'src/app/shared/app-date-time.pipe';
+import { UserInfo } from 'src/app/shared/user-info';
+import { Pageable } from 'src/app/shared/pageable';
 
 const today = new Date();
 const POLL_INTERVAL_MS = 5000;
@@ -95,6 +97,8 @@ export class ProcessManagementComponent implements OnDestroy {
 
   batches: Batch[] = [];
   filters: BatchSearchFilters = {};
+  /** Real users only (not kramerius, not engine) for createdBy filter */
+  realUsers: UserInfo[] = [];
   dateFormControls: { createdAfter: FormControl; updatedAfter: FormControl } = {
     createdAfter: new FormControl(),
     updatedAfter: new FormControl(),
@@ -120,6 +124,17 @@ export class ProcessManagementComponent implements OnDestroy {
   ngOnInit() {
     this._locale = 'cs';
     this._adapter.setLocale(this._locale);
+    this.service
+      .fetchUsers({
+        isKramerius: false,
+        isEngine: false,
+        isEnabled: true,
+        page: 0,
+        size: 1000,
+      })
+      .subscribe((res: Pageable<UserInfo>) => {
+        this.realUsers = res.content ?? [];
+      });
     this.getBatches();
     this.startRefreshIfRunning();
   }

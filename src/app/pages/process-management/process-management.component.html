@@ -21,6 +21,12 @@
         <ng-container matColumnDef="createdBy">
           <th mat-header-cell *matHeaderCellDef class="app-header-cell-with-filter">
             <div class="app-header-inner">
+              <mat-form-field class="app-header-filter" (click)="$event.stopPropagation()">
+                <mat-select [(ngModel)]="filters.createdBy" (ngModelChange)="filter('createdBy', filters.createdBy)" panelClass="app-panel-table-header" [placeholder]="'desc.filterByUser' | translate">
+                  <mat-option *ngFor="let u of realUsers" [value]="u.username">{{ u.username }}</mat-option>
+                </mat-select>
+                <button mat-icon-button matIconSuffix color="warn" *ngIf="filters.createdBy" (click)="filter('createdBy', ''); $event.stopPropagation()"><mat-icon>clear</mat-icon></button>
+              </mat-form-field>
               <div class="app-header-title">
                 <span>{{ 'desc.createdBy' | translate }}</span>
               </div>
