@@ -38,6 +38,7 @@ export class BatchPollingService implements OnDestroy {
 
   start() {
     this.stop();
+    if (!this.appState.currentUser?.isCurator) return;
     this.stop$ = new Subject<void>();
     this.loadTracked();
     this.lastTriggerTime = Date.now();
@@ -62,6 +63,7 @@ export class BatchPollingService implements OnDestroy {
   }
 
   triggerCheck() {
+    if (!this.appState.currentUser?.isCurator) return;
     this.lastTriggerTime = Date.now();
     this.trigger$.next();
     if (this.intervalSub == null) this.startInterval();
@@ -99,6 +101,7 @@ export class BatchPollingService implements OnDestroy {
   }
 
   private fetchBatches() {
+    if (!this.appState.currentUser?.isCurator) return of({ content: [] as Batch[], totalElements: 0 });
     const username = this.appState.currentUser?.username;
     if (!username) return of({ content: [] as Batch[], totalElements: 0 });
     return this.appService.searchBatches(
