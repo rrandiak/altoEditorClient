@@ -35,6 +35,10 @@ export const TOP_MODELS = [
   Model.SOUNDRECORDING,
 ];
 
+export const ALL_MODELS = Object.values(Model).filter(
+  (v): v is Model => typeof v === 'string',
+) as Model[];
+
 export interface KrameriusDO {
   pid: string;
   model: string;

@@ -284,7 +284,19 @@
             </td>
           </ng-container>
           <ng-container matColumnDef="location">
-            <th mat-header-cell *matHeaderCellDef>{{ 'desc.location' | translate }}</th>
+            <th mat-header-cell *matHeaderCellDef class="app-header-cell-with-filter">
+              <div class="app-header-inner">
+                <mat-form-field class="app-header-filter" (click)="$event.stopPropagation()">
+                  <mat-select [(ngModel)]="bothLocationFilter" (ngModelChange)="applyBothFilterLocation($event)"
+                    panelClass="app-panel-table-header" [placeholder]="'desc.filterByLocation' | translate">
+                    <mat-option *ngFor="let opt of bothLocationOptions" [value]="opt">{{ 'filterLocation.' + opt | translate }}</mat-option>
+                  </mat-select>
+                  <button mat-icon-button matIconSuffix color="warn" *ngIf="bothLocationFilter"
+                    (click)="applyBothFilterLocation(''); bothLocationFilter = ''; $event.stopPropagation();"><mat-icon>clear</mat-icon></button>
+                </mat-form-field>
+                <div class="app-header-title">{{ 'desc.location' | translate }}</div>
+              </div>
+            </th>
             <td mat-cell *matCellDef="let r" class="app-location-cell">
               <div class="app-location-row" [style.padding-left.px]="getRowLevel(r) * 24">
                 <span class="app-tree-toggle">
@@ -326,7 +338,19 @@
             <td mat-cell *matCellDef="let r">{{ r.pid }}</td>
           </ng-container>
           <ng-container matColumnDef="model">
-            <th mat-header-cell *matHeaderCellDef>{{ 'desc.model' | translate }}</th>
+            <th mat-header-cell *matHeaderCellDef class="app-header-cell-with-filter">
+              <div class="app-header-inner">
+                <mat-form-field class="app-header-filter" (click)="$event.stopPropagation()">
+                  <mat-select [(ngModel)]="bothModelFilter" (ngModelChange)="applyBothFilterModel($event)"
+                    panelClass="app-panel-table-header" [placeholder]="'desc.filterByModel' | translate">
+                    <mat-option *ngFor="let m of bothModelOptions" [value]="m">{{ 'model.' + m | translate }}</mat-option>
+                  </mat-select>
+                  <button mat-icon-button matIconSuffix color="warn" *ngIf="bothModelFilter"
+                    (click)="applyBothFilterModel(''); bothModelFilter = ''; $event.stopPropagation();"><mat-icon>clear</mat-icon></button>
+                </mat-form-field>
+                <div class="app-header-title">{{ 'desc.model' | translate }}</div>
+              </div>
+            </th>
             <td mat-cell *matCellDef="let r" class="app-dual-cell">
               <ng-container *ngIf="!isNotFound(r)">
                 <ng-container *ngIf="formatDualModel(r); let v">
@@ -340,7 +364,19 @@
             </td>
           </ng-container>
           <ng-container matColumnDef="level">
-            <th mat-header-cell *matHeaderCellDef>{{ 'desc.level' | translate }}</th>
+            <th mat-header-cell *matHeaderCellDef class="app-header-cell-with-filter">
+              <div class="app-header-inner">
+                <mat-form-field class="app-header-filter" (click)="$event.stopPropagation()">
+                  <mat-select [(ngModel)]="bothLevelFilter" (ngModelChange)="applyBothFilterLevel($event)"
+                    panelClass="app-panel-table-header" [placeholder]="'desc.filterByLevel' | translate">
+                    <mat-option *ngFor="let l of bothLevelOptions" [value]="l">{{ l }}</mat-option>
+                  </mat-select>
+                  <button mat-icon-button matIconSuffix color="warn" *ngIf="bothLevelFilter !== ''"
+                    (click)="applyBothFilterLevel(''); bothLevelFilter = ''; $event.stopPropagation();"><mat-icon>clear</mat-icon></button>
+                </mat-form-field>
+                <div class="app-header-title">{{ 'desc.level' | translate }}</div>
+              </div>
+            </th>
             <td mat-cell *matCellDef="let r" class="app-dual-cell">
               <ng-container *ngIf="!isNotFound(r)">
                 <ng-container *ngIf="formatDualLevel(r); let v">
@@ -363,7 +399,19 @@
             </td>
           </ng-container>
           <ng-container matColumnDef="pagesCount">
-            <th mat-header-cell *matHeaderCellDef>{{ 'desc.pagesCount' | translate }}</th>
+            <th mat-header-cell *matHeaderCellDef class="app-header-cell-with-filter">
+              <div class="app-header-inner">
+                <mat-form-field class="app-header-filter" (click)="$event.stopPropagation()">
+                  <mat-select [(ngModel)]="bothPagesCountFilter" (ngModelChange)="applyBothFilterPagesCount($event)"
+                    panelClass="app-panel-table-header" [placeholder]="'desc.filterByPagesCount' | translate">
+                    <mat-option *ngFor="let opt of bothPagesFilterOptions" [value]="opt">{{ 'filterPagesCount.' + opt | translate }}</mat-option>
+                  </mat-select>
+                  <button mat-icon-button matIconSuffix color="warn" *ngIf="bothPagesCountFilter"
+                    (click)="applyBothFilterPagesCount(''); bothPagesCountFilter = ''; $event.stopPropagation();"><mat-icon>clear</mat-icon></button>
+                </mat-form-field>
+                <div class="app-header-title">{{ 'desc.pagesCount' | translate }}</div>
+              </div>
+            </th>
             <td mat-cell *matCellDef="let r" class="app-dual-cell">
               <ng-container *ngIf="!isNotFound(r)">
                 <ng-container *ngIf="formatDualPagesCount(r); let v">
@@ -377,7 +425,19 @@
             </td>
           </ng-container>
           <ng-container matColumnDef="pagesWithAlto">
-            <th mat-header-cell *matHeaderCellDef>{{ 'desc.pagesWithAlto' | translate }}</th>
+            <th mat-header-cell *matHeaderCellDef class="app-header-cell-with-filter">
+              <div class="app-header-inner">
+                <mat-form-field class="app-header-filter" (click)="$event.stopPropagation()">
+                  <mat-select [(ngModel)]="bothAltoPagesFilter" (ngModelChange)="applyBothFilterAltoPages($event)"
+                    panelClass="app-panel-table-header" [placeholder]="'desc.filterByPagesWithAlto' | translate">
+                    <mat-option *ngFor="let opt of bothPagesFilterOptions" [value]="opt">{{ 'filterPagesWithAlto.' + opt | translate }}</mat-option>
+                  </mat-select>
+                  <button mat-icon-button matIconSuffix color="warn" *ngIf="bothAltoPagesFilter"
+                    (click)="applyBothFilterAltoPages(''); bothAltoPagesFilter = ''; $event.stopPropagation();"><mat-icon>clear</mat-icon></button>
+                </mat-form-field>
+                <div class="app-header-title">{{ 'desc.pagesWithAlto' | translate }}</div>
+              </div>
+            </th>
             <td mat-cell *matCellDef="let r" class="app-dual-cell">
               <ng-container *ngIf="!isNotFound(r)">
                 <ng-container *ngIf="formatDualPagesWithAlto(r); let v">
@@ -486,7 +546,7 @@
             (click)="canExpandPidRow(row) && togglePidSubtree(row, $event)"
           ></tr>
         </table>
-        <div *ngIf="pidResults.length === 0" class="app-p-2 app-muted">{{ 'placeholder.noLocalDocuments' | translate }}</div>
+        <div *ngIf="pidResults.length === 0" class="app-p-2 app-muted">{{ loadingPids ? ('placeholder.loading' | translate) : ('placeholder.noLocalDocuments' | translate) }}</div>
       </ng-container>
 
     </div>

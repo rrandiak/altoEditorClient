@@ -72,6 +72,11 @@
     "filterByType": "Filter by type",
     "filterByTitle": "Filter by title",
     "filterByModel": "Filter by model",
+    "filterByLocation": "Filter by location",
+    "filterByLevel": "Filter by level",
+    "filterByPagesCount": "Filter by pages count",
+    "filterByPagesWithAlto": "Filter by pages with ALTO",
+    "filterAny": "Any",
     "all": "All",
     "acceptSuccess": "Version accepted",
     "rejectSuccess": "Version rejected",
@@ -182,6 +187,22 @@
     "local": "AltoEditor",
     "kramerius": "Kramerius",
     "notFound": "Not found"
+  },
+  "filterLocation": {
+    "both": "Kramerius and AltoEditor",
+    "kramerius": "Only Kramerius",
+    "local": "Only AltoEditor",
+    "notFound": "Not found"
+  },
+  "filterPagesCount": {
+    "none": "No pages in AltoEditor",
+    "some": "Some pages in AltoEditor but not all",
+    "all": "All pages in AltoEditor"
+  },
+  "filterPagesWithAlto": {
+    "none": "No pages with ALTO (version) in AltoEditor",
+    "some": "Some pages with ALTO in AltoEditor but not all",
+    "all": "All pages with ALTO in AltoEditor"
   },
   "paginator": {
     "desc": {

@@ -26,6 +26,7 @@ import { AppConfiguration } from 'src/app/app-configuration';
 import { AppService } from 'src/app/app.service';
 import { AppState } from 'src/app/shared/app.state';
 import {
+  ALL_MODELS,
   DOHierarchy,
   DOHierarchySearchRequest,
   Model,
@@ -109,7 +110,7 @@ export class DocumentHierarchyComponent implements OnInit {
   localLevel0: DOHierarchy[] = [];
   localTotal = 0;
   localPageIndex = 0;
-  localPageSize = 10;
+  localPageSize = 25;
   loadingLocal = false;
   localSortBy = 'title';
   localOrderSort: 'asc' | 'desc' = 'asc';
@@ -127,6 +128,22 @@ export class DocumentHierarchyComponent implements OnInit {
   selectedLocalPids = new Set<string>();
   /** Selected PIDs in both/Kramerius table */
   selectedBothPids = new Set<string>();
+
+  /** Client-side filters for both (PID) table; all results kept in pidResults, filtered in bothTableRows */
+  bothLocationFilter: string = '';
+  bothModelFilter: string = '';
+  bothLevelFilter: number | '' = '';
+  bothPagesCountFilter: string = '';
+  bothAltoPagesFilter: string = '';
+  readonly bothLocationOptions = [
+    'both',
+    'kramerius',
+    'local',
+    'notFound',
+  ] as const;
+  readonly bothModelOptions = ALL_MODELS;
+  readonly bothLevelOptions = [0, 1, 2, 3, 4, 5];
+  readonly bothPagesFilterOptions = ['none', 'some', 'all'] as const;
 
   /** When batch is running, shows { planned, total } */
   batchProgress: { planned: number; total: number } | null = null;
@@ -173,11 +190,12 @@ export class DocumentHierarchyComponent implements OnInit {
     return out;
   }
 
-  /** Both mode: tree rows (roots + expanded children recursively). */
+  /** Both mode: tree rows (roots + expanded children recursively), filtered client-side. */
   get bothTableRows(): PidCheckResult[] {
     const out: PidCheckResult[] = [];
     const append = (rows: PidCheckResult[]) => {
       for (const r of rows) {
+        if (!this.matchesBothRowFilters(r)) continue;
         out.push(r);
         const children = this.expandedPidChildren.get(r.pid);
         if (children?.length) append(children);
@@ -187,10 +205,107 @@ export class DocumentHierarchyComponent implements OnInit {
     return out;
   }
 
+  /** Whether row passes all both-table filters (client-side). */
+  matchesBothRowFilters(r: PidCheckResult): boolean {
+    if (this.bothLocationFilter) {
+      const hasK = !!r.kramerius;
+      const hasL = this.hasLocalOrAlto(r);
+      const notFound = this.isNotFound(r);
+      switch (this.bothLocationFilter) {
+        case 'both':
+          if (!hasK || !hasL) return false;
+          break;
+        case 'kramerius':
+          if (!hasK || hasL) return false;
+          break;
+        case 'local':
+          if (hasK || !hasL) return false;
+          break;
+        case 'notFound':
+          if (!notFound) return false;
+          break;
+      }
+    }
+    if (this.bothModelFilter) {
+      const kModel = r.kramerius?.model;
+      const lModel = r.local?.model;
+      if (kModel !== this.bothModelFilter && lModel !== this.bothModelFilter)
+        return false;
+    }
+    if (
+      this.bothLevelFilter !== '' &&
+      this.bothLevelFilter !== null &&
+      this.bothLevelFilter !== undefined
+    ) {
+      if (this.isNotFound(r)) return false;
+      const filterLevel = this.bothLevelFilter;
+
+      if (r.kramerius == null) return false;
+      if (r.local != null && r.kramerius.level !== r.local.level) return false;
+      return r.kramerius.level === filterLevel;
+    }
+    if (this.bothPagesCountFilter) {
+      const kPages = (r.kramerius as KrameriusDOHierarchy)?.pagesCount ?? 0;
+      const lPages = r.local?.pagesCount ?? 0;
+      const match = this.matchPagesFilter(
+        lPages,
+        kPages,
+        this.bothPagesCountFilter,
+      );
+      if (!match) return false;
+    }
+    if (this.bothAltoPagesFilter) {
+      const kPages = (r.kramerius as KrameriusDOHierarchy)?.pagesCount ?? 0;
+      const lAlto = r.local?.pagesWithAlto ?? 0;
+      const match = this.matchPagesFilter(
+        lAlto,
+        kPages,
+        this.bothAltoPagesFilter,
+      );
+      if (!match) return false;
+    }
+    return true;
+  }
+
+  private matchPagesFilter(
+    localOrAltoCount: number,
+    krameriusPages: number,
+    option: string,
+  ): boolean {
+    switch (option) {
+      case 'none':
+        return localOrAltoCount === 0;
+      case 'some':
+        return (
+          krameriusPages > 0 &&
+          localOrAltoCount > 0 &&
+          localOrAltoCount < krameriusPages
+        );
+      case 'all':
+        return krameriusPages > 0 && localOrAltoCount >= krameriusPages;
+      default:
+        return true;
+    }
+  }
+
+  applyBothFilterLocation(value: string): void {
+    this.bothLocationFilter = value;
+  }
+  applyBothFilterModel(value: string): void {
+    this.bothModelFilter = value;
+  }
+  applyBothFilterLevel(value: number | ''): void {
+    this.bothLevelFilter = value;
+  }
+  applyBothFilterPagesCount(value: string): void {
+    this.bothPagesCountFilter = value;
+  }
+  applyBothFilterAltoPages(value: string): void {
+    this.bothAltoPagesFilter = value;
+  }
+
   getRowLevel(r: PidCheckResult): number {
-    return r.kramerius?.model === 'page'
-      ? 0
-      : (r.kramerius?.level ?? r.local?.level ?? 0);
+    return r.kramerius?.level ?? r.local?.level ?? 0;
   }
 
   canExpandPidRow(r: PidCheckResult): boolean {

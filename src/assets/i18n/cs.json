@@ -72,6 +72,10 @@
     "filterByType": "Filtrovat dle typu",
     "filterByTitle": "Filtrovat dle názvu",
     "filterByModel": "Filtrovat dle modelu",
+    "filterByLocation": "Filtrovat dle umístění",
+    "filterByLevel": "Filtrovat dle úrovně",
+    "filterByPagesCount": "Filtrovat dle počtu stránek",
+    "filterByPagesWithAlto": "Filtrovat dle stránek s ALTO",
     "all": "Vše",
     "acceptSuccess": "Verze přijata",
     "rejectSuccess": "Verze odmítnuta",
@@ -132,11 +136,11 @@
     "map": "Mapa",
     "monographunit": "Jednotka monografie",
     "sheetmusic": "Notový záznam",
-    "track": "Stopa",
+    "track": "Zvuková stopa",
     "periodical": "Periodikum",
     "soundunit": "Zvuková jednotka",
     "internalpart": "Vnitřní část",
-    "collection": "Kolekce",
+    "collection": "Sbírka",
     "soundrecording": "Zvukový záznam",
     "archive": "Archiv",
     "convolute": "Konvolut",
@@ -182,6 +186,22 @@
     "local": "AltoEditor",
     "kramerius": "Kramerius",
     "notFound": "Nenalezeno"
+  },
+  "filterLocation": {
+    "both": "Kramerius a AltoEditor",
+    "kramerius": "Pouze Kramerius",
+    "local": "Pouze AltoEditor",
+    "notFound": "Nenalezeno"
+  },
+  "filterPagesCount": {
+    "none": "Žádné stránky v AltoEditoru",
+    "some": "Některé stránky v AltoEditoru, ne všechny",
+    "all": "Všechny stránky v AltoEditoru"
+  },
+  "filterPagesWithAlto": {
+    "none": "Žádné stránky s ALTO v AltoEditoru",
+    "some": "Některé stránky s ALTO v AltoEditoru, ne všechny",
+    "all": "Všechny stránky s ALTO v AltoEditoru"
   },
   "paginator": {
     "desc": {
