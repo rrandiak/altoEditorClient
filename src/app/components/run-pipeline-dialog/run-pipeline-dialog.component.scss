@@ -1,0 +1,26 @@
+.app-dialog-content {
+  padding-top: 20px;
+  overflow: visible;
+  min-height: 72px;
+}
+
+mat-form-field.app-w-100 {
+  width: 100%;
+}
+
+.app-priority {
+  margin-top: 16px;
+}
+
+.app-scope-label {
+  margin: 16px 0 8px;
+  font-size: 14px;
+  color: rgba(0, 0, 0, 0.87);
+}
+
+.app-stage-group,
+.app-radio-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}

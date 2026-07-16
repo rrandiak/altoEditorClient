@@ -25,12 +25,30 @@ export enum BatchType {
   GENERATE_FOR_HIERARCHY = 'GENERATE_FOR_HIERARCHY',
   ACCEPT_VERSIONS = 'ACCEPT_VERSIONS',
   REINDEX = 'REINDEX',
+  PIPELINE = 'PIPELINE',
 }
 
 export enum HierarchyGenerateScope {
   ALL = 'ALL',
   NO_PENDING = 'NO_PENDING',
   NO_PENDING_NOR_ACTIVE = 'NO_PENDING_NOR_ACTIVE',
+}
+
+/** A stage of the unified load-generate-accept pipeline (canonical order). */
+export enum PipelineStage {
+  RETRIEVE = 'RETRIEVE',
+  GENERATE = 'GENERATE',
+  ACCEPT = 'ACCEPT',
+}
+
+/** Body for POST /api/pipelines. */
+export interface PipelineRequest {
+  pid: string;
+  instance?: string;
+  engine?: string;
+  scope?: HierarchyGenerateScope;
+  stages: PipelineStage[];
+  priority: BatchPriority;
 }
 
 export interface HierarchyGenerateData {

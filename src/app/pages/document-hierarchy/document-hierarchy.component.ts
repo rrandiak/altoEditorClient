@@ -33,7 +33,11 @@ import {
   TOP_MODELS,
 } from 'src/app/shared/digital-object';
 import { SearchResults } from 'src/app/shared/search-results';
-import { BatchPriority, HierarchyGenerateScope } from 'src/app/shared/batch';
+import {
+  BatchPriority,
+  HierarchyGenerateScope,
+  PipelineRequest,
+} from 'src/app/shared/batch';
 import { BatchPollingService } from 'src/app/shared/batch-polling.service';
 import {
   PlanProcessDialogComponent,
@@ -44,6 +48,11 @@ import {
   GenerateForHierarchyDialogData,
   GenerateForHierarchyDialogResult,
 } from 'src/app/components/generate-for-hierarchy-dialog/generate-for-hierarchy-dialog.component';
+import {
+  RunPipelineDialogComponent,
+  RunPipelineDialogData,
+  RunPipelineDialogResult,
+} from 'src/app/components/run-pipeline-dialog/run-pipeline-dialog.component';
 import { UserInfo } from 'src/app/shared/user-info';
 import { forkJoin, of } from 'rxjs';
 import { catchError, map, switchMap } from 'rxjs/operators';
@@ -968,6 +977,119 @@ export class DocumentHierarchyComponent implements OnInit {
       error: (err) =>
         this.service.showSnackBar(err?.error?.message || 'message.error', true),
     });
+  }
+
+  // --- Pipeline (load -> generate -> accept) ------------------------------- //
+
+  /** Per-row: run a pipeline for one hierarchy PID with the chosen engine. */
+  openRunPipelineDialog(pid: string, engine: UserInfo, event: Event): void {
+    event.stopPropagation();
+    this.dialog
+      .open(RunPipelineDialogComponent, {
+        data: {
+          title: 'actionTitle.runPipeline',
+          titleParams: { engine: engine.username },
+        } as RunPipelineDialogData,
+        width: '400px',
+      })
+      .afterClosed()
+      .subscribe((result: RunPipelineDialogResult | undefined) => {
+        if (result) {
+          this.planPipeline(pid, engine, result);
+        }
+      });
+  }
+
+  /** Toolbar: run a pipeline for every eligible selected PID with the chosen engine. */
+  openBatchRunPipelineDialogWithEngine(engine: UserInfo, event: Event): void {
+    event.stopPropagation();
+    const pids = this.isPidSearchMode
+      ? this.getBothPidsEligibleForGenerate()
+      : this.getLocalPidsEligibleForGenerate();
+    if (pids.length === 0) {
+      this.service.showSnackBar('message.error', true);
+      return;
+    }
+    this.dialog
+      .open(RunPipelineDialogComponent, {
+        data: {
+          title: 'actionTitle.runPipeline',
+          titleParams: { engine: engine.username },
+        } as RunPipelineDialogData,
+        width: '400px',
+      })
+      .afterClosed()
+      .subscribe((result: RunPipelineDialogResult | undefined) => {
+        if (result) {
+          this.batchPipeline(pids, engine, result);
+        }
+      });
+  }
+
+  private buildPipelineRequest(
+    pid: string,
+    engine: UserInfo,
+    result: RunPipelineDialogResult,
+  ): PipelineRequest {
+    return {
+      pid,
+      engine: engine.username,
+      instance: this.config.instance,
+      scope: result.scope,
+      stages: result.stages,
+      priority: result.priority,
+    };
+  }
+
+  planPipeline(
+    pid: string,
+    engine: UserInfo,
+    result: RunPipelineDialogResult,
+  ): void {
+    this.service.planPipeline(this.buildPipelineRequest(pid, engine, result)).subscribe({
+      next: () => {
+        this.batchPolling.triggerCheck();
+        this.service.showSnackBar('message.pipelinePlanned', false);
+      },
+      error: (err) =>
+        this.service.showSnackBar(err?.error?.message || 'message.error', true),
+    });
+  }
+
+  private batchPipeline(
+    pids: string[],
+    engine: UserInfo,
+    result: RunPipelineDialogResult,
+  ): void {
+    this.batchProgress = { planned: 0, total: pids.length };
+    let done = 0;
+    const run = (i: number) => {
+      if (i >= pids.length) {
+        this.batchProgress = null;
+        this.batchPolling.triggerCheck();
+        this.service.showSnackBar('message.pipelinePlanned', false);
+        this.selectedLocalPids = new Set();
+        this.selectedBothPids = new Set();
+        return;
+      }
+      this.service
+        .planPipeline(this.buildPipelineRequest(pids[i], engine, result))
+        .subscribe({
+          next: () => {
+            this.batchProgress = { planned: done + 1, total: pids.length };
+            done++;
+            run(i + 1);
+          },
+          error: (err) => {
+            this.batchProgress = null;
+            this.service.showSnackBar(
+              err?.error?.message || 'message.error',
+              true,
+            );
+          },
+        });
+    };
+    run(0);
   }
 
   /** True when we have local DOHierarchy or ALTO version (Kramerius page with ALTO). */

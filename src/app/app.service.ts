@@ -7,7 +7,7 @@ import { catchError, map, tap } from 'rxjs/operators';
 import { TranslateService } from '@ngx-translate/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { AppConfiguration } from './app-configuration';
-import { Batch, BatchPriority, BatchSearchFilters, HierarchyGenerateScope } from './shared/batch';
+import { Batch, BatchPriority, BatchSearchFilters, HierarchyGenerateScope, PipelineRequest } from './shared/batch';
 import { SearchResults } from './shared/search-results';
 import { AppState } from './shared/app.state';
 import {
@@ -344,5 +344,9 @@ export class AppService {
 
   planReindex(priority: BatchPriority): Observable<any> {
     return this.post(`/system/reindex?priority=${priority}`, null);
+  }
+
+  planPipeline(request: PipelineRequest): Observable<any> {
+    return this.post(`/pipelines`, request);
   }
 }

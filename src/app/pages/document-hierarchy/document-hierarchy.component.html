@@ -68,6 +68,20 @@
               {{ engine.username }}
             </button>
           </mat-menu>
+          <button
+            *ngIf="state.engineUsers?.length && generateEligibleCount > 0"
+            mat-stroked-button
+            [matMenuTriggerFor]="batchPipelineMenu"
+            [disabled]="batchProgress !== null"
+          >
+            <mat-icon>rocket_launch</mat-icon>
+            {{ 'action.runPipeline' | translate }} ({{ generateEligibleCount }})
+          </button>
+          <mat-menu #batchPipelineMenu="matMenu">
+            <button mat-menu-item *ngFor="let engine of state.engineUsers" (click)="openBatchRunPipelineDialogWithEngine(engine, $event)">
+              {{ engine.username }}
+            </button>
+          </mat-menu>
           <span *ngIf="batchProgress" class="app-ml-2" style="font-size: 0.9em; color: #666;">
             {{ batchProgress.planned }} / {{ batchProgress.total }}
           </span>
@@ -237,6 +251,19 @@
                 </button>
                 <mat-menu #acceptEngineMenuLocal="matMenu">
                   <button mat-menu-item *ngFor="let engine of state.engineUsers" (click)="openAcceptEnginePriorityDialog(doc.pid, engine, $event)">
+                    {{ engine.username }}
+                  </button>
+                </mat-menu>
+                <button
+                  *ngIf="state.engineUsers?.length"
+                  mat-icon-button
+                  [matMenuTriggerFor]="pipelineMenuLocal"
+                  [matTooltip]="'action.runPipeline' | translate"
+                >
+                  <mat-icon>rocket_launch</mat-icon>
+                </button>
+                <mat-menu #pipelineMenuLocal="matMenu">
+                  <button mat-menu-item *ngFor="let engine of state.engineUsers" (click)="openRunPipelineDialog(doc.pid, engine, $event)">
                     {{ engine.username }}
                   </button>
                 </mat-menu>
@@ -515,6 +542,19 @@
                 </button>
                 <mat-menu #acceptEngineMenuBoth="matMenu">
                   <button mat-menu-item *ngFor="let engine of state.engineUsers" (click)="openAcceptEnginePriorityDialog(r.pid, engine, $event)">
+                    {{ engine.username }}
+                  </button>
+                </mat-menu>
+                <button
+                  *ngIf="state.engineUsers?.length && (r.kramerius || hasLocalOrAlto(r))"
+                  mat-icon-button
+                  [matMenuTriggerFor]="pipelineMenuBoth"
+                  [matTooltip]="'action.runPipeline' | translate"
+                >
+                  <mat-icon>rocket_launch</mat-icon>
+                </button>
+                <mat-menu #pipelineMenuBoth="matMenu">
+                  <button mat-menu-item *ngFor="let engine of state.engineUsers" (click)="openRunPipelineDialog(r.pid, engine, $event)">
                     {{ engine.username }}
                   </button>
                 </mat-menu>

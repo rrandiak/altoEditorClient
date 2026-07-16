@@ -45,6 +45,7 @@
     "priority": "Priority",
     "withPriority": "With priority",
     "generateScope": "Scope for hierarchy",
+    "pipelineStages": "Stages to run",
     "location": "Location",
     "model": "Model",
     "pagesCount": "Pages count",
@@ -94,14 +95,16 @@
     "acceptEngineVersions": "Accept engine versions",
     "viewRevisions": "View revisions",
     "reindex": "Reindex all",
-    "acceptAllVersions": "Accept all versions"
+    "acceptAllVersions": "Accept all versions",
+    "runPipeline": "Run pipeline"
   },
   "actionTitle": {
     "fetchFromKramerius": "Fetch document hierarchy and ALTO versions from Kramerius",
     "generateSinglePageAlto": "Generate ALTO for the selected page using engine {{engine}}",
     "generateForHierarchy": "Generate ALTO for all pages in the selected hierarchy using engine {{engine}}",
     "acceptEngineVersions": "Accept engine versions for the hierarchy using engine {{engine}}",
-    "reindex": "Delete and rebuild all indexes"
+    "reindex": "Delete and rebuild all indexes",
+    "runPipeline": "Run pipeline for the selected hierarchy using engine {{engine}}"
   },
   "message": {
     "altoVersionSaved": "ALTO version saved",
@@ -112,6 +115,7 @@
     "altoVersionGenerationPlanned": "ALTO version generation planned",
     "hierarchyFetchPlanned": "Document hierarchy fetch planned",
     "acceptVersionsPlanned": "Accept versions planned",
+    "pipelinePlanned": "Pipeline planned",
     "acceptAllVersionsExplain": "All results in the table that are in the selected state will be accepted.",
     "acceptAllVersionsState": "All results that are in {{state}} state will be accepted.",
     "reindexPlanned": "Reindex planned",
@@ -176,12 +180,18 @@
     "NO_PENDING": "Skip pages with pending version",
     "NO_PENDING_NOR_ACTIVE": "Skip pages with pending or active version"
   },
+  "pipelineStage": {
+    "RETRIEVE": "Load from Kramerius",
+    "GENERATE": "Generate ALTO",
+    "ACCEPT": "Accept (upload to Kramerius)"
+  },
   "processType": {
     "GENERATE_SINGLE": "Generate for single page",
     "GENERATE_FOR_HIERARCHY": "Generate for hierarchy",
     "RETRIEVE_HIERARCHY": "Retrieve hierarchy",
     "REINDEX": "Reindex",
-    "ACCEPT_VERSIONS": "Accept versions"
+    "ACCEPT_VERSIONS": "Accept versions",
+    "PIPELINE": "Pipeline"
   },
   "location": {
     "local": "AltoEditor",

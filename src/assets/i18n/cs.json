@@ -45,6 +45,7 @@
     "priority": "Priorita",
     "withPriority": "S prioritou",
     "generateScope": "Rozsah pro hierarchii",
+    "pipelineStages": "Kroky ke spuštění",
     "location": "Umístění",
     "model": "Model",
     "pagesCount": "Počet stránek",
@@ -93,14 +94,16 @@
     "acceptEngineVersions": "Přijmout verze engine",
     "viewRevisions": "Zobrazit revize",
     "reindex": "Vše reindexovat",
-    "acceptAllVersions": "Přijmout všechny verze"
+    "acceptAllVersions": "Přijmout všechny verze",
+    "runPipeline": "Spustit pipeline"
   },
   "actionTitle": {
     "fetchFromKramerius": "Načíst hierarchii dokumentů a ALTO verze z Krameria",
     "generateSinglePageAlto": "Vygenerovat ALTO pro vybranou stránku s použitím engine {{engine}}",
     "generateForHierarchy": "Vygenerovat ALTO pro všechny stránky ve vybrané hierarchii s použitím engine {{engine}}",
     "acceptEngineVersions": "Přijmout verze engine pro vybranou hierarchii a pro engine {{engine}}",
-    "reindex": "Smazat a znovu vybudovat všechny indexy"
+    "reindex": "Smazat a znovu vybudovat všechny indexy",
+    "runPipeline": "Spustit pipeline pro vybranou hierarchii s použitím engine {{engine}}"
   },
   "message": {
     "altoVersionSaved": "ALTO verze uložena",
@@ -111,6 +114,7 @@
     "altoVersionGenerationPlanned": "Vygenerování ALTO verze naplánováno",
     "hierarchyFetchPlanned": "Načtení hierarchie dokumentů naplánováno",
     "acceptVersionsPlanned": "Přijetí verzí naplánováno",
+    "pipelinePlanned": "Pipeline naplánována",
     "acceptAllVersionsExplain": "Všechny výsledky v tabulce, které jsou ve zvoleném stavu, budou přijaty.",
     "acceptAllVersionsState": "Všechny výsledky ve stavu {{state}} budou přijaty.",
     "reindexPlanned": "Reindexace naplánována",
@@ -175,12 +179,18 @@
     "NO_PENDING": "Přeskočit stránky s čekající verzí",
     "NO_PENDING_NOR_ACTIVE": "Přeskočit stránky s čekající nebo aktivní verzí"
   },
+  "pipelineStage": {
+    "RETRIEVE": "Načíst z Krameria",
+    "GENERATE": "Vygenerovat ALTO",
+    "ACCEPT": "Přijmout (nahrát do Krameria)"
+  },
   "processType": {
     "GENERATE_SINGLE": "Generování pro jednu stránku",
     "GENERATE_FOR_HIERARCHY": "Generování pro hierarchii",
     "RETRIEVE_HIERARCHY": "Načtení hierarchie",
     "REINDEX": "Reindexace",
-    "ACCEPT_VERSIONS": "Přijetí verzí"
+    "ACCEPT_VERSIONS": "Přijetí verzí",
+    "PIPELINE": "Pipeline"
   },
   "location": {
     "local": "AltoEditor",
