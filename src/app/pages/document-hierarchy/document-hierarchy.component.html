@@ -69,13 +69,13 @@
             </button>
           </mat-menu>
           <button
-            *ngIf="state.engineUsers?.length && generateEligibleCount > 0"
+            *ngIf="state.engineUsers?.length && fetchEligibleCount > 0"
             mat-stroked-button
             [matMenuTriggerFor]="batchPipelineMenu"
             [disabled]="batchProgress !== null"
           >
             <mat-icon>rocket_launch</mat-icon>
-            {{ 'action.runPipeline' | translate }} ({{ generateEligibleCount }})
+            {{ 'action.runPipeline' | translate }} ({{ fetchEligibleCount }})
           </button>
           <mat-menu #batchPipelineMenu="matMenu">
             <button mat-menu-item *ngFor="let engine of state.engineUsers" (click)="openBatchRunPipelineDialogWithEngine(engine, $event)">

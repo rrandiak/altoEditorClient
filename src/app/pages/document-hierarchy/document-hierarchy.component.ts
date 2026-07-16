@@ -1000,12 +1000,16 @@ export class DocumentHierarchyComponent implements OnInit {
       });
   }
 
-  /** Toolbar: run a pipeline for every eligible selected PID with the chosen engine. */
+  /**
+   * Toolbar: run a pipeline for every selected PID with the chosen engine. The pipeline
+   * starts with Load, so eligibility is fetch-eligibility (present in Kramerius), not
+   * generate-eligibility — this covers PIDs not yet in AltoEditor.
+   */
   openBatchRunPipelineDialogWithEngine(engine: UserInfo, event: Event): void {
     event.stopPropagation();
     const pids = this.isPidSearchMode
-      ? this.getBothPidsEligibleForGenerate()
-      : this.getLocalPidsEligibleForGenerate();
+      ? this.getBothPidsEligibleForFetch()
+      : this.getLocalPidsEligibleForFetch();
     if (pids.length === 0) {
       this.service.showSnackBar('message.error', true);
       return;
